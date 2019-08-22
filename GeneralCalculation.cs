@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +35,7 @@ namespace SinoTunnel
             this.sectionUID = sectionUID;
             this.p = new GetWebData(sectionUID);
             this.oSTN_VerticalStress = new STN_VerticalStress(sectionUID, "WEBFORM");
-            sg.Rout = p.segmentRadiusOut;
+            sg.Rout = p.segmentRadiusOut; // m
             sg.width = p.segmentWidth * 100; // cm
             sg.UW = 71.05; //kN/m²
             sg.t1 = 2.8; // cm
@@ -58,14 +58,14 @@ namespace SinoTunnel
         double Faceinertia;
 
         double eta = 0.83; // η
-        double zeta = 0.3; // ζ
+        double xi = 0.3; // ξ
 
         double Ks;
         double delta; // δ
         double Pv;
         double Ph1;
         double Ph2;
-        double Pv4;
+        double Ph4;
         double Pv5;
         double g;
 
@@ -75,7 +75,7 @@ namespace SinoTunnel
         double poreLatSpacing;
         double poreVerSpacing;
         int poreNum;
-        public void Process()
+        public void Process(out string str)
         {            
             oSTN_VerticalStress.VerticalStress("TUNNEL", out string lt, out string st, out string surch, out double lE1,
                 out double sE1, out double pt, out double lph1, out double lph2, out double sph1, out double sph2, out double uu);
@@ -86,7 +86,7 @@ namespace SinoTunnel
             Pv = 344.52;
             Ph1 = 230.24;
             Ph2 = 316.66;
-            Pv4 = 120.48;
+            Ph4 = 120.48;
             Calculation();
 
             // beta 查表參數
@@ -100,6 +100,14 @@ namespace SinoTunnel
             poreVerSpacing = 0.075; // m
             poreNum = 4;
             SGPore();
+
+            OutRound();
+            string propStr = ExportSGProps();
+            str = "";
+            str += propStr;
+
+            string tableStr = ExportSGCalculation();
+            str += tableStr;
         }
 
         #region Props
@@ -127,7 +135,7 @@ namespace SinoTunnel
             g = Pv5 / Math.PI;
             delta = (2 * Pv - Ph1 - Ph2 + Pv5) * Math.Pow(sg.Rout, 4)
                 / (24 * (eta * sg.E * Faceinertia * 1E-8 + 0.0454 * Ks * Math.Pow(sg.Rout, 4))); // m 
-            Pv4 = Ks * delta; //kN/m²
+            Ph4 = Ks * delta; //kN/m²
         }
         #endregion
 
@@ -135,23 +143,24 @@ namespace SinoTunnel
         double M1 = 0;
         double M2 = 0;
         double Mmax;
-        double Mcmax;
-        double Mjmax;
+        double M1c;
+        double M1j;
         double Q1 = 0;
         double Q2 = 0;
         double Qmax;
-        double Mcmin;
-        double Mjmin;
+        double M2c;
+        double M2j;
         double P1;
         double P2;
+        List<Tuple<int, double, double, double>> PvCal = new List<Tuple<int, double, double, double>>();
+        List<Tuple<int, double, double, double>> Ph1Cal = new List<Tuple<int, double, double, double>>();
+        List<Tuple<int, double, double, double>> Ph2_1Cal = new List<Tuple<int, double, double, double>>();
+        List<Tuple<int, double, double, double>> kdeltaCal = new List<Tuple<int, double, double, double>>();
+        List<Tuple<int, double, double, double>> Pv5Cal = new List<Tuple<int, double, double, double>>();
         List<Tuple<int, double, double, double>> totalCal = new List<Tuple<int, double, double, double>>();
         public void Calculation()
         {
-            List<Tuple<int, double, double, double>> PvCal = new List<Tuple<int, double, double, double>>();
-            List<Tuple<int, double, double, double>> Ph1Cal = new List<Tuple<int, double, double, double>>();
-            List<Tuple<int, double, double, double>> Ph2_1Cal = new List<Tuple<int, double, double, double>>();
-            List<Tuple<int, double, double, double>> kdeltaCal = new List<Tuple<int, double, double, double>>();
-            List<Tuple<int, double, double, double>> Pv5Cal = new List<Tuple<int, double, double, double>>();            
+                     
 
             int j = 2;
             for (int i = 0; i <= 180 ; i += 5)
@@ -164,6 +173,7 @@ namespace SinoTunnel
                 double NTotal = 0;
                 double QTotal = 0;
 
+                // Pv
                 double M = (1 - 2 * Math.Pow(sinI, 2)) / 4 * Pv * sg.Rout * sg.Rout;
                 double N = Pv * sg.Rout * Math.Pow(sinI, 2);
                 double Q = Pv * sg.Rout * sinI * cosI * (-1);
@@ -171,7 +181,9 @@ namespace SinoTunnel
                 MTotal += M;
                 NTotal += N;
                 QTotal += Q;
+                //
 
+                // Ph1
                 M = ((1 - 2 * Math.Pow(cosI, 2)) / 4) * Ph1 * sg.Rout * sg.Rout;
                 N = Ph1 * sg.Rout * Math.Pow(cosI, 2);
                 Q = Ph1 * sg.Rout * sinI * cosI;
@@ -179,7 +191,10 @@ namespace SinoTunnel
                 MTotal += M;
                 NTotal += N;
                 QTotal += Q;
+                //
 
+
+                // Ph2 - Ph1
                 M = (6 - 3 * cosI - 12 * Math.Pow(cosI, 2) + 4 * Math.Pow(cosI, 3)) / 48 * (Ph2 - Ph1) * sg.Rout * sg.Rout;
                 N = (cosI + 8 * Math.Pow(cosI, 2) - 4 * Math.Pow(cosI, 3)) / 16 * (Ph2 - Ph1) * sg.Rout;
                 Q = (sinI + 8 * sinI * cosI - 4 * sinI * Math.Pow(cosI, 2)) / 16 * (Ph2 - Ph1) * sg.Rout;
@@ -187,7 +202,10 @@ namespace SinoTunnel
                 MTotal += M;
                 NTotal += N;
                 QTotal += Q;
+                //
 
+
+                // Ph4
                 if (i <= 90)
                 {
                     switch (i)
@@ -224,7 +242,10 @@ namespace SinoTunnel
                 MTotal += M;
                 NTotal += N;
                 QTotal += Q;
+                // 
+                
 
+                //Pv5
                 switch (i)
                 {
                     case int a when (a <= 90):
@@ -243,6 +264,7 @@ namespace SinoTunnel
                 MTotal += M;
                 NTotal += N;
                 QTotal += Q;
+                // 
 
                 totalCal.Add(Tuple.Create(i, MTotal, NTotal, QTotal));
 
@@ -253,38 +275,38 @@ namespace SinoTunnel
                 if (QTotal < Q2) { Q2 = QTotal; P2 = NTotal; }// kN
             }
 
-            Mcmax = (1 + zeta) * Mmax / p.newton; // t-m
-            Mjmax = (1 - zeta) * Mmax / p.newton; // t-m
+            M1c = (1 + xi) * Mmax / p.newton; // t-m
+            M1j = (1 - xi) * Mmax / p.newton; // t-m
             Qmax /= p.newton; // t
 
-            Mcmin = (1 + zeta) * M2 / p.newton; // t-m
-            Mjmin = (1 - zeta) * M2 / p.newton; // t-m
+            M2c = (1 + xi) * M2 / p.newton; // t-m
+            M2j = (1 - xi) * M2 / p.newton; // t-m
 
             P1 /= p.newton; // t
             P2 /= p.newton; // t
         }
         #endregion
 
-        
+        #region Check
         public void SGCheck()
         {           
             // 鑄鐵環片外側板之檢測
-            double stressP1t = P1 * 1E3 / FaceAeff - Mcmax * 1E5 * Faceybar / Faceinertia;
+            double stressP1t = P1 * 1E3 / FaceAeff - M1c * 1E5 * Faceybar / Faceinertia;
             bool P1tBool;
             if (stressP1t < sg.Fat) P1tBool = true;
             else P1tBool = false;
 
-            double stressP1c = P1 * 1E3 / FaceAeff + Mcmax * 1E5 * (sg.t - Faceybar) / Faceinertia;
+            double stressP1c = P1 * 1E3 / FaceAeff + M1c * 1E5 * (sg.t - Faceybar) / Faceinertia;
             bool P1cBool;
             if (stressP1c < sg.Fac) P1cBool = true;
             else P1cBool = false;
 
-            double stressP2t = P2 * 1E3 / FaceAeff + Mcmin * 1E5 * (sg.t - Faceybar) / Faceinertia;
+            double stressP2t = P2 * 1E3 / FaceAeff + M2c * 1E5 * (sg.t - Faceybar) / Faceinertia;
             bool P2tBool;
             if (stressP2t < sg.Fat) P2tBool = true;
             else P2tBool = false;
 
-            double stressP2c = P2 * 1E3 / FaceAeff - Mcmin * 1E5 * Faceybar / Faceinertia;
+            double stressP2c = P2 * 1E3 / FaceAeff - M2c * 1E5 * Faceybar / Faceinertia;
             bool P2cBool;
             if (stressP2c < sg.Fac) P2cBool = true;
             else P2cBool = false;
@@ -366,8 +388,6 @@ namespace SinoTunnel
 
         public void SGPore()
         {
-
-
             List<Tuple<double, double, double, double, double, double, bool>> poreCheck =
                 new List<Tuple<double, double, double, double, double, double, bool>>();
 
@@ -384,8 +404,259 @@ namespace SinoTunnel
                 else vCehck = false;
 
                 poreCheck.Add(Tuple.Create(m, q, V1, V2, Vmax, Fv, vCehck));
-
             }
         }
+        #endregion
+
+        #region Export Web
+        double outFaceyBar;
+        double outFaceInertia;
+        double outPv5;
+        double outg;
+        double outKs;
+        double outSoilE;
+        double outSoilNu;
+
+        double outPv;
+        double outPh1;
+        double outPh2;
+        double outDelta;
+        double outPh4;
+                       
+        public void OutRound()
+        {
+            outFaceyBar = Math.Round(Faceybar, 2);
+            outFaceInertia = Math.Round(Faceinertia, 0);
+            outPv5 = Math.Round(Pv5, 2);
+            outg = Math.Round(g, 2);
+            outKs = Math.Round(Ks, 2);
+            outSoilE = Math.Round(oSTN_VerticalStress.longTermSoilE, 2);
+            outSoilNu = Math.Round(oSTN_VerticalStress.Nu12, 2);
+
+            outPv = Math.Round(Pv, 2);
+            outPh1 = Math.Round(Ph1, 2);
+            outPh2 = Math.Round(Ph2, 2);
+            outDelta = Math.Round(delta, 6);
+            outPh4 = Math.Round(Ph4, 2);
+        }
+
+        public string ExportSGProps()
+        {
+            string propStr = "";
+            propStr += $"鑄鐵環片基本資料： <br> ";
+
+            propStr += $" {emsp1()} 鑄鐵板降伏強度 fy = {sg.Fy} kg/cm² <br> ";
+            propStr += $" {emsp1()} 鑄鐵板楊式模數 Ed = {sg.E} kN/m² <br> ";
+            propStr += $" {emsp1()} 鑄鐵板單位重 γ = {sg.UW} kN/m³ <br> ";
+            propStr += $" {emsp1()} 環片外徑 D = {sg.Rout * 2} m <br> ";
+            propStr += $" {emsp1()} 環片寬度 B = {sg.width} cm <br> ";
+            propStr += $" {emsp1()} 外緣面板厚度 t1 = {sg.t1} cm <br> ";
+            propStr += $" {emsp1()} 主樑板厚度 t2 = {sg.t2} cm <br> ";
+            propStr += $" {emsp1()} 肋板厚度 t3 = {sg.t3} cm <br> ";
+            propStr += $" {emsp1()} 環片厚度 t = {sg.t} m <br> ";
+            propStr += $" {emsp1()} 縱肋版相隔角度 θ = {sg.theta}° <br> ";
+            //propStr += $" <br> {image("images\\鑄鐵環片切面.jpg")} <br> ";
+            //propStr += $" <br> {image("images\\鑄鐵環片剖面_03修正.jpg")} <br> ";
+            propStr += $" <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片切面.jpg")} <br> ";
+            propStr += $" <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片剖面_03修正.jpg")} <br> ";
+
+            propStr += $" {emsp1()} (1)有效寬度 beff <br> ";
+            propStr += $" {emsp2()} beff = 25 * t1 = 25 * {sg.t1} = {25 * sg.t1} cm <br> ";
+            propStr += $" {emsp2()} B = {sg.width} cm <br> ";
+
+            string strTemp;
+            if ((25 * sg.t1) > sg.width) strTemp = ">";
+            else strTemp = "<";
+            propStr += $" {emsp2()} beff {strTemp} B <br> ";
+            propStr += $" {emsp2()} 取 beff = {Facebeff} cm <br> ";
+
+            propStr += $" {emsp1()} (2)面積A,慣性矩I <br> ";
+            propStr += $" {emsp2()} A = {sg.width}*{sg.t1} + ({sg.t} - {sg.t1})*{sg.t2}*2 = {FaceAeff} cm² <br> ";
+            propStr += $" {emsp2()} y' = [{sg.width}*{sg.t1}*{sg.t - sg.t1 / 2} + {sg.t - sg.t1}*{sg.t2}*{sg.t - sg.t1}/2*2]/{FaceAeff}" +
+                $" = {outFaceyBar} cm <br> ";
+            propStr += $" {emsp2()} I = 1/12*{sg.width}*{sg.t1}³ + {sg.width}*{sg.t1}*({sg.t - sg.t1 / 2} - {outFaceyBar})² +" +
+                $" 1/12*{sg.t2}*{sg.t - sg.t1}³ + {sg.t2}*{sg.t - sg.t1}*({outFaceyBar} - {sg.t - sg.t1}/2)² * 2 " +
+                $" = {outFaceInertia} cm⁴ <br> ";
+
+            propStr += $" {emsp1()} (3)環片自重(每1m) <br> ";
+            propStr += $" {emsp2()} Pv5 = ~ = {outPv5} kN/m² <br> ";
+            propStr += $" {emsp2()} g = Pv5 / π = {outg} <br> ";
+
+            propStr += $" {emsp1()} (4)側向反力 Ph4 <br> ";
+            propStr += $" {emsp2()} Ks = Eavg * (1 - υs) / [R * (1 + υs) * (1 - 2*υs)] = " +
+                $" {outSoilE}*(1-{outSoilNu}) / [{sg.Rout}*(1 + {outSoilNu})" +
+                $"*(1 - 2*{outSoilNu})] = {outKs} kN/m³ <br> ";
+            propStr += $" {emsp2()} δ = (2Pv - Ph1 - Ph2 + πg)*R⁴/[24(ηEavgI + 0.0454*Ks*R⁴)] =" +
+                $" (2*{outPv} - {outPh1} - {outPh2} + π*{outg})*{sg.Rout}⁴ / [24({eta}*{sg.E}*{outFaceInertia}*1E-8 +" +
+                $" 0.0454*{outKs}*{sg.Rout}⁴ = {outDelta} m <br> ";
+            propStr += $" {emsp2()} Ph4 = {outPh4} kN/m² (=Ks*δ) <br> ";
+
+            return propStr;
+        }
+
+        public string ExportSGCalculation()
+        {
+            string calStr = "";
+
+            calStr += $"環片受力分析(慣用計算) <br> ";
+
+            calStr += $" {emsp1()} 環片半徑 R = {sg.Rout} m <br> ";
+            calStr += $" {emsp1()} 環片厚度 = {sg.t / 100} m <br> ";
+            calStr += $" {emsp1()} 頂拱垂直荷重 Pv = {outPv} kN/m² <br> ";
+            calStr += $" {emsp1()} 頂拱水平荷重 Ph1 = {outPh1} kN/m² <br> ";
+            calStr += $" {emsp1()} 仰拱水平荷重 Ph2 = {outPh2} kN/m² <br> ";
+            calStr += $" {emsp1()} 側向反力 Ph4 = {outPh4} kN/m² <br> ";
+            calStr += $" {emsp1()} 環片自重 Pv5 = {outPv5} kN/m² <br> ";
+            calStr += $" {emsp1()} 環片勁度折減係數 η = {eta} <br> ";
+            calStr += $" {emsp1()} 彎矩修正因子 ξ = {xi} <br> <br> ";
+                       
+
+            string PvStr = "";
+            PvStr += $"1.由垂直線型荷重Pv產生之力量 <br> ";
+            PvStr += $" {emsp1()} 彎矩 M = 1/4*(1 - 2*sin²θ)*Pv*R² <br> ";
+            PvStr += $" {emsp1()} 軸力 N = Pv*R*sin²θ <br> ";
+            PvStr += $" {emsp1()} 剪力 Q = Pv*R*sinθ*cosθ <br> ";
+
+            string table = ForceTable(PvCal);            
+            PvStr += table;
+
+            calStr += PvStr;
+            calStr += "<br>";
+
+            string Ph1Str = "";
+            Ph1Str += $"2.由水平線型荷重Ph1產生之力量 <br> ";
+            Ph1Str += $" {emsp1()} 彎矩 M = 1/4*(1 - 2*cos²θ)*Ph1*R² <br> ";
+            Ph1Str += $" {emsp1()} 軸力 N = Ph1*R*cos²θ <br> ";
+            Ph1Str += $" {emsp1()} 剪力 Q = Ph1*R*sinθ*cosθ <br> ";
+            table = ForceTable(Ph1Cal);
+            Ph1Str += table;
+
+            calStr += Ph1Str;
+            calStr += " <br> ";
+
+            string Ph2_1Str = "";
+            Ph2_1Str += $"3.由水平線型荷重Ph2-Ph1產生之力量 <br> ";
+            Ph2_1Str += $" {emsp1()} 彎矩 M = 1/48*(6 - 3*cosθ - 12*cos²θ + 4*cos³θ)*(Ph2 - Ph1) * R² <br> ";
+            Ph2_1Str += $" {emsp1()} 軸力 N = 1/16*(cosθ + 8*cos²θ - 4*cos³θ)*(Ph2 - Ph1) * R <br> ";
+            Ph2_1Str += $" {emsp1()} 剪力 Q = 1/16*(sinθ + 8*sinθ*cosθ - 4*sinθ*cos²θ)*(Ph2 - Ph1) * R <br> ";
+            table = ForceTable(Ph2_1Cal);
+            Ph2_1Str += table;
+
+            calStr += Ph2_1Str;
+            calStr += " <br> ";
+
+            string Ph4Str = "";
+            Ph4Str += $"4.由側向反力荷重Ph4產生之力量 <br> ";
+            Ph4Str += $" {emsp1()} 當 0°≦ θ <45° <br> ";
+            Ph4Str += $" {emsp1()} 彎矩 M = (0.2346 - 0.3536*cosθ) * Ph4 * R² <br> ";
+            Ph4Str += $" {emsp1()} 軸力 N = 0.3536*cosθ * Ph4 * R <br> ";
+            Ph4Str += $" {emsp1()} 剪力 Q = 0.3536*sinθ * Ph4 * R <br> ";
+
+            Ph4Str += $" {emsp1()} 當 45°≦ θ ≦90° <br> ";
+            Ph4Str += $" {emsp1()} 彎矩 M = (-0.3487 + 0.5*sin²θ + 0.2357*cos³θ) * Ph4 * R² <br> ";
+            Ph4Str += $" {emsp1()} 軸力 N = (-0.7071*cosθ + cos²θ + 0.7071*sin²θ*cosθ) * Ph4 * R <br> ";
+            Ph4Str += $" {emsp1()} 剪力 Q = (sinθ*cosθ - 0.7071*cos²θ*sinθ) * Ph4 * R <br> ";
+            table = ForceTable(kdeltaCal);
+            Ph4Str += table;
+
+            calStr += Ph4Str;
+            calStr += " <br> ";
+
+            string Pv5Str = "";
+            Pv5Str += $"5.由襯砌自重Pv5產生之力量 <br> ";
+            Pv5Str += $" {emsp1()} 當 0°≦ θ ≦90° <br> ";
+            Pv5Str += $" {emsp1()} 彎矩 M = (3/8*π - θ*sinθ - 5/6*cosθ) * g * R² <br> ";
+            Pv5Str += $" {emsp1()} 軸力 N = (θ*sinθ - 1/6*cosθ) * g * R <br> ";
+            Pv5Str += $" {emsp1()} 剪力 Q = (θ*cosθ + 1/6*sinθ) * g * R <br> ";
+
+            Pv5Str += $" {emsp1()} 當 90°< θ ≦180° <br> ";
+            Pv5Str += $" {emsp1()} 彎矩 M = [-1/8*π + (π - θ)*sinθ - 5/6*cosθ - 1/2*π*sin²θ] * g * R² <br> ";
+            Pv5Str += $" {emsp1()} 軸力 N = (-π*sinθ + θ*sinθ + π*sin²θ - 1/6*cosθ) * g * R <br> ";
+            Pv5Str += $" {emsp1()} 剪力 Q = [(π - θ)*sinθ - π*sinθ*cosθ - 1/6*sinθ) * g * R <br> ";
+            table = ForceTable(Pv5Cal);
+            Pv5Str += table;
+
+            calStr += Pv5Str;
+            calStr += " <br> ";
+
+            string P6Str = "";
+            P6Str += $"6.環片襯砌所受之總力(Pv,Ph2,Ph2,Ph4,Ph5) <br> ";
+            table = ForceTable(totalCal);
+            P6Str += table;
+
+            calStr += P6Str;
+            calStr += " <br> ";
+
+
+            calStr += $" <br> M1 = {Math.Round(M1, 2)} kN-m <br> ";
+            calStr += $" M2 = {Math.Round(M2, 2)} kN-m <br> ";
+            calStr += $" Mmax = {Math.Round(Mmax, 2)} kN-m <br> ";
+            calStr += $" M1c = (1 + ξ)M1 = {Math.Round(M1c, 2)} kN-m = {Math.Round(M1c / p.newton, 2)} t-m <br> ";
+            calStr += $" M1j = (1 - ξ)M1 = {Math.Round(M1j, 2)} kN-m = {Math.Round(M1j / p.newton, 2)} t-m <br> ";
+                        
+            calStr += $" Q1 = {Math.Round(Q1, 2)} kN <br> ";
+            calStr += $" Q2 = {Math.Round(Q2, 2)} kN <br> ";
+            calStr += $" Qmax = {Math.Round(Qmax, 2)} kN <br> ";
+            calStr += $" M2c = (1 + ξ)M2 = {Math.Round(M2c, 2)} kN-m = {Math.Round(M2c / p.newton, 2)} t-m <br> ";
+            calStr += $" M2j = (1 + ξ)M2 = {Math.Round(M2j, 2)} kN-m = {Math.Round(M2j / p.newton, 2)} t-m <br> ";
+
+            return calStr;
+        }
+
+        string ForceTable(List<Tuple<int, double ,double, double>> force)
+        {
+            string tableStart = $" {emsp1()} <table cellpadding='1' border='5' width='400'> <tr> ";
+            tableStart += $" <th> 角度(°) </th> <th> 彎矩(kN-m) </th> <th> 軸力(kN) </th> <th> 剪力(kN) </th> ";
+            string tableEnd = " </table> ";
+            string table = "";
+
+            table = tableStart;            
+            for(int i = 0; i < force.Count; i++)
+            {
+                double M = Math.Round(force[i].Item2, 2);
+                double N = Math.Round(force[i].Item3, 2);
+                double Q = Math.Round(force[i].Item4, 2);
+                table += $" <tr> <th> {force[i].Item1} </th> <th> {M} </th> <th> {N} </th> <th> {Q} </th> ";
+            }
+            table += tableEnd;
+            return table;
+        }
+
+        public string ExportSGCheck()
+        {
+            string checkSTR = "";
+
+            checkSTR += $"鑄鐵環片檢核 <br> ";
+            checkSTR += $" {emsp1()} 環片外徑 D = {sg.Rout * 2} m <br> ";
+            checkSTR += $" {emsp1()} 外緣面板厚度 t1 = {sg.t1} cm <br> ";
+            checkSTR += $" {emsp1()} 主樑板厚度 t2 = {sg.t2} cm <br> ";
+            checkSTR += $" {emsp1()} 環片厚度 t = {sg.t / 100} m <br> ";
+            checkSTR += $" {emsp1()} P1 = {P1} t <br> ";
+            checkSTR += $" {emsp1()} M1 = {M1} t-m <br> ";
+            checkSTR += $" {emsp1()} P2 = {P2} t <br> ";
+            checkSTR += $" {emsp1()} M2 = {M2} t-m <br> ";
+
+            checkSTR += $" {emsp1()} be = {Facebeff} cm <br> ";
+            checkSTR += $" {emsp1()} A = {FaceAeff} cm² <br> ";
+            checkSTR += $" {emsp1()} y' = {Faceybar} cm <br> ";
+            checkSTR += $" {emsp1()} I = {Faceinertia} cm⁴ <br> ";
+
+            checkSTR += $" {emsp1()} 容許抗彎拉應力 = {sg.Fat} kg/cm² <br> ";
+            checkSTR += $" {emsp1()} 容許抗彎壓應力 = {sg.Fac} kg/cm² <br> ";
+            checkSTR += $" {emsp1()} 容許抗剪應力 = {sg.Fas} kg/cm² <br> ";
+
+            checkSTR += $" {emsp1()} (1)鑄鐵環片外側板之檢測 <br> ";
+            checkSTR += $" {emsp2()} σ = P1/A ";
+
+            return checkSTR;
+        }
+
+        string emsp4() { return "&emsp; &emsp; &emsp; &emsp;"; }
+        string emsp3() { return "&emsp; &emsp; &emsp;"; }        
+        string emsp2() { return "&emsp; &emsp;"; }        
+        string emsp1() { return "&emsp;"; }
+        
+        public string image(string str) { return $"<img src='{str}'></img> "; }
+        #endregion
     }
 }
