@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace SinoTunnel
 {
@@ -23,12 +24,13 @@ namespace SinoTunnel
         public double Fas; // kg/cm² - 容許抗剪應力
     }
 
-    class GeneralCalculation
+    public class GeneralCalculation
     {
         string sectionUID;
         GetWebData p;
         DuctileCastIron sg = new DuctileCastIron();
         STN_VerticalStress oSTN_VerticalStress;
+        ExcuteSQL oExecuteSQL = new ExcuteSQL();
 
         public GeneralCalculation(string sectionUID, string condition)
         {
@@ -76,7 +78,9 @@ namespace SinoTunnel
         double poreVerSpacing;
         int poreNum;
         public void Process(out string str)
-        {            
+        {
+            //BetaAutoCatch();
+
             oSTN_VerticalStress.VerticalStress("TUNNEL", out string lt, out string st, out string surch, out double lE1,
                 out double sE1, out double pt, out double lph1, out double lph2, out double sph1, out double sph2, out double uu);
             
@@ -108,6 +112,9 @@ namespace SinoTunnel
 
             string tableStr = ExportSGCalculation();
             str += tableStr;
+
+            string checkSTR = ExportSGCheck();
+            str += checkSTR;
         }
 
         #region Props
@@ -288,65 +295,87 @@ namespace SinoTunnel
         #endregion
 
         #region Check
+        double stressP1t;
+        bool P1tBool;
+        double stressP1c;
+        bool P1cBool;
+
+        double stressP2t;
+        bool P2tBool;
+        double stressP2c;
+        bool P2cBool;
+
+        double lx;
+        double ly;
+        double Vx;
+        double Wx;
+        double Wy;
+        double CentermaxMx;
+        double CentermaxMy;
+        double EdgeMaxMx;
+        double EdgeMaxMy;
+        double ElasStressX;
+        double ElasStressY;
+        bool MxElasticBool;
+        bool MyElasticBool;
+
+        double alpha;
+        double SeelyM;
+        double SeelyStress;
+        bool SeelyBool;
         public void SGCheck()
         {           
             // 鑄鐵環片外側板之檢測
-            double stressP1t = P1 * 1E3 / FaceAeff - M1c * 1E5 * Faceybar / Faceinertia;
-            bool P1tBool;
+            stressP1t = P1 * 1E3 / FaceAeff - M1c * 1E5 * Faceybar / Faceinertia;            
             if (stressP1t < sg.Fat) P1tBool = true;
             else P1tBool = false;
 
-            double stressP1c = P1 * 1E3 / FaceAeff + M1c * 1E5 * (sg.t - Faceybar) / Faceinertia;
-            bool P1cBool;
+            stressP1c = P1 * 1E3 / FaceAeff + M1c * 1E5 * (sg.t - Faceybar) / Faceinertia;            
             if (stressP1c < sg.Fac) P1cBool = true;
             else P1cBool = false;
 
-            double stressP2t = P2 * 1E3 / FaceAeff + M2c * 1E5 * (sg.t - Faceybar) / Faceinertia;
-            bool P2tBool;
+            stressP2t = P2 * 1E3 / FaceAeff + M2c * 1E5 * (sg.t - Faceybar) / Faceinertia;            
             if (stressP2t < sg.Fat) P2tBool = true;
             else P2tBool = false;
 
-            double stressP2c = P2 * 1E3 / FaceAeff - M2c * 1E5 * Faceybar / Faceinertia;
-            bool P2cBool;
+            stressP2c = P2 * 1E3 / FaceAeff - M2c * 1E5 * Faceybar / Faceinertia;            
             if (stressP2c < sg.Fac) P2cBool = true;
             else P2cBool = false;
 
-            double lx;
-            double ly;
+            
             // 四邊固定支承矩形板彈性設計法
             ly = sg.width / 100; // m
             lx = sg.Rout * 2 * Math.PI * sg.theta / 360; // m
 
             double C = ly / lx;
-            double Vx = 1 - (C * C * 5 / 18 / (1 + Math.Pow(C,4)));
+            Vx = 1 - (C * C * 5 / 18 / (1 + Math.Pow(C,4)));
             double Vy = Vx;
-            double Wx = Pv / (Math.Pow(1 / C, 4) + 1);
-            double Wy = Pv / (1 + Math.Pow(C, 4));
+            Wx = Pv / (Math.Pow(1 / C, 4) + 1);
+            Wy = Pv / (1 + Math.Pow(C, 4));
 
-            double CentermaxMx = Vx / 24 * Wx * lx * lx;
-            double CentermaxMy = Vy / 24 * Wy * ly * ly;
+            CentermaxMx = Vx / 24 * Wx * lx * lx;
+            CentermaxMy = Vy / 24 * Wy * ly * ly;
 
-            double EdgeMaxMx = Wx * lx * lx / 12 * (-1);
-            double EdgeMaxMy = Wy * ly * ly / 12 * (-1);
+            EdgeMaxMx = Wx * lx * lx / 12 * (-1);
+            EdgeMaxMy = Wy * ly * ly / 12 * (-1);
 
-            double stressMx = (EdgeMaxMx / p.newton * 1E3 * 1E2 * (sg.t1 / 2)) / (lx * 100 * Math.Pow(sg.t1, 3) / 12);
-            double stressMy = (EdgeMaxMy / p.newton * 1E3 * 1E2 * (sg.t1 / 2)) / (ly * 100 * Math.Pow(sg.t1, 3) / 12);
-
-            bool MxElasticBool;
-            bool MyElasticBool;
-            if (stressMx < sg.Fat) MxElasticBool = true;
-            if (stressMy < sg.Fat) MyElasticBool = true;
+            ElasStressX = (EdgeMaxMx / p.newton * 1E3 * 1E2 * (sg.t1 / 2)) / (lx * 100 * Math.Pow(sg.t1, 3) / 12);
+            ElasStressY = (EdgeMaxMy / p.newton * 1E3 * 1E2 * (sg.t1 / 2)) / (ly * 100 * Math.Pow(sg.t1, 3) / 12);
+                        
+            if (ElasStressX < sg.Fat) MxElasticBool = true;
+            if (ElasStressY < sg.Fat) MyElasticBool = true;
 
             // Seely 法
-            double alpha = lx / ly;
+            alpha = lx / ly;
 
-            beta = Math.Round(0.0512 * Math.Pow(alpha, 3) - 0.0959 * Math.Pow(alpha, 2) + 0.0136 * alpha + 0.0632,2);
+            //beta = Math.Round(0.0512 * Math.Pow(alpha, 3) - 0.0959 * Math.Pow(alpha, 2) + 0.0136 * alpha + 0.0632,2);
+            DataTable dt = oExecuteSQL.GetByUID("STN_Section", sectionUID);
+            beta = double.Parse(dt.Rows[0]["CastIronBeta"].ToString());
             //查圖得知，以用找點公式自動抓取
 
-            double SeelyM = beta * Pv * 2 * lx * lx; // kN-m/m
-            double SeelyStress = 6 * SeelyM * 100 / sg.t1 / sg.t1; // kg/cm²
-
-            bool SeelyBool;
+            SeelyM = beta * Pv * 2 * lx * lx; // kN-m/m
+            SeelyStress = 6 * SeelyM * 100 / sg.t1 / sg.t1; // kg/cm²
+                        
             if (SeelyStress < sg.Fat) SeelyBool = true;
             else SeelyBool = false;
         }
@@ -408,40 +437,48 @@ namespace SinoTunnel
         }
         #endregion
 
-        #region Export Web
-        double outFaceyBar;
-        double outFaceInertia;
-        double outPv5;
-        double outg;
-        double outKs;
-        double outSoilE;
-        double outSoilNu;
-
+        #region Export Web        
+        
+        double outPv5;                                
         double outPv;
         double outPh1;
         double outPh2;
         double outDelta;
         double outPh4;
+
+        double outFaceAeff;
+        double outFaceyBar;
+        double outFaceInertia;
+
+        double outM1c;
+        double outM2c;
                        
         public void OutRound()
-        {
-            outFaceyBar = Math.Round(Faceybar, 2);
-            outFaceInertia = Math.Round(Faceinertia, 0);
-            outPv5 = Math.Round(Pv5, 2);
-            outg = Math.Round(g, 2);
-            outKs = Math.Round(Ks, 2);
-            outSoilE = Math.Round(oSTN_VerticalStress.longTermSoilE, 2);
-            outSoilNu = Math.Round(oSTN_VerticalStress.Nu12, 2);
-
+        {                        
+            outPv5 = Math.Round(Pv5, 2);                                                
             outPv = Math.Round(Pv, 2);
             outPh1 = Math.Round(Ph1, 2);
             outPh2 = Math.Round(Ph2, 2);
             outDelta = Math.Round(delta, 6);
             outPh4 = Math.Round(Ph4, 2);
+
+            outFaceAeff = Math.Round(FaceAeff, 2);
+            outFaceyBar = Math.Round(Faceybar, 2);
+            outFaceInertia = Math.Round(Faceinertia, 0);
+
+            outM1c = Math.Round(M1c, 2);
+            outM2c = Math.Round(M2c, 2);
         }
 
         public string ExportSGProps()
         {
+            
+            double outg = Math.Round(g, 2);
+            double outKs = Math.Round(Ks, 2);
+
+            double outSoilE = Math.Round(oSTN_VerticalStress.longTermSoilE, 2);
+            double outSoilNu = Math.Round(oSTN_VerticalStress.Nu12, 2);
+
             string propStr = "";
             propStr += $"鑄鐵環片基本資料： <br> ";
 
@@ -471,9 +508,9 @@ namespace SinoTunnel
             propStr += $" {emsp2()} 取 beff = {Facebeff} cm <br> ";
 
             propStr += $" {emsp1()} (2)面積A,慣性矩I <br> ";
-            propStr += $" {emsp2()} A = {sg.width}*{sg.t1} + ({sg.t} - {sg.t1})*{sg.t2}*2 = {FaceAeff} cm² <br> ";
-            propStr += $" {emsp2()} y' = [{sg.width}*{sg.t1}*{sg.t - sg.t1 / 2} + {sg.t - sg.t1}*{sg.t2}*{sg.t - sg.t1}/2*2]/{FaceAeff}" +
-                $" = {outFaceyBar} cm <br> ";
+            propStr += $" {emsp2()} A = {sg.width}*{sg.t1} + ({sg.t} - {sg.t1})*{sg.t2}*2 = {outFaceAeff} cm² <br> ";
+            propStr += $" {emsp2()} y' = [{sg.width}*{sg.t1}*{sg.t - sg.t1 / 2} + {sg.t - sg.t1}*{sg.t2}*{sg.t - sg.t1}/2*2]" +
+                $"/{outFaceAeff} = {outFaceyBar} cm <br> ";
             propStr += $" {emsp2()} I = 1/12*{sg.width}*{sg.t1}³ + {sg.width}*{sg.t1}*({sg.t - sg.t1 / 2} - {outFaceyBar})² +" +
                 $" 1/12*{sg.t2}*{sg.t - sg.t1}³ + {sg.t2}*{sg.t - sg.t1}*({outFaceyBar} - {sg.t - sg.t1}/2)² * 2 " +
                 $" = {outFaceInertia} cm⁴ <br> ";
@@ -591,14 +628,14 @@ namespace SinoTunnel
             calStr += $" <br> M1 = {Math.Round(M1, 2)} kN-m <br> ";
             calStr += $" M2 = {Math.Round(M2, 2)} kN-m <br> ";
             calStr += $" Mmax = {Math.Round(Mmax, 2)} kN-m <br> ";
-            calStr += $" M1c = (1 + ξ)M1 = {Math.Round(M1c, 2)} kN-m = {Math.Round(M1c / p.newton, 2)} t-m <br> ";
-            calStr += $" M1j = (1 - ξ)M1 = {Math.Round(M1j, 2)} kN-m = {Math.Round(M1j / p.newton, 2)} t-m <br> ";
+            calStr += $" M1c = (1 + ξ)M1 = {Math.Round(outM1c * p.newton, 2)} kN-m = {outM1c} t-m <br> ";
+            calStr += $" M1j = (1 - ξ)M1 = {Math.Round(M1j * p.newton, 2)} kN-m = {Math.Round(M1j, 2)} t-m <br> ";
                         
             calStr += $" Q1 = {Math.Round(Q1, 2)} kN <br> ";
             calStr += $" Q2 = {Math.Round(Q2, 2)} kN <br> ";
             calStr += $" Qmax = {Math.Round(Qmax, 2)} kN <br> ";
-            calStr += $" M2c = (1 + ξ)M2 = {Math.Round(M2c, 2)} kN-m = {Math.Round(M2c / p.newton, 2)} t-m <br> ";
-            calStr += $" M2j = (1 + ξ)M2 = {Math.Round(M2j, 2)} kN-m = {Math.Round(M2j / p.newton, 2)} t-m <br> ";
+            calStr += $" M2c = (1 + ξ)M2 = {Math.Round(outM2c * p.newton, 2)} kN-m = {outM2c} t-m <br> ";
+            calStr += $" M2j = (1 + ξ)M2 = {Math.Round(M2j * p.newton, 2)} kN-m = {Math.Round(M2j, 2)} t-m <br> ";
 
             return calStr;
         }
@@ -624,6 +661,30 @@ namespace SinoTunnel
 
         public string ExportSGCheck()
         {
+            double outP1 = Math.Round(P1, 2);
+            double outP2 = Math.Round(P2, 2);
+
+            double outStressP1t = Math.Round(stressP1t, 1);
+            double outStressP1c = Math.Round(stressP1c, 1);
+            double outStressP2t = Math.Round(stressP2t, 1);
+            double outStressP2c = Math.Round(stressP2c, 1);
+
+            double outVx = Math.Round(Vx, 4);
+            double outWx = Math.Round(Wx, 4);
+            double outWy = Math.Round(Wy, 4);
+
+            double outCenterMaxMx = Math.Round(CentermaxMx, 3);
+            double outCenterMaxMy = Math.Round(CentermaxMy, 3);
+            double outEdgeMaxMx = Math.Round(EdgeMaxMx, 4);
+            double outEdgeMaxMy = Math.Round(EdgeMaxMy, 4);
+            double outElasStressX = Math.Round(ElasStressX, 3);
+            double outElasStressY = Math.Round(ElasStressY, 3);
+
+            double outAlpha = Math.Round(alpha, 3);
+            double outSeelyM = Math.Round(SeelyM, 2);
+            double outSeelyStress = Math.Round(SeelyStress, 2);
+
+
             string checkSTR = "";
 
             checkSTR += $"鑄鐵環片檢核 <br> ";
@@ -631,10 +692,10 @@ namespace SinoTunnel
             checkSTR += $" {emsp1()} 外緣面板厚度 t1 = {sg.t1} cm <br> ";
             checkSTR += $" {emsp1()} 主樑板厚度 t2 = {sg.t2} cm <br> ";
             checkSTR += $" {emsp1()} 環片厚度 t = {sg.t / 100} m <br> ";
-            checkSTR += $" {emsp1()} P1 = {P1} t <br> ";
-            checkSTR += $" {emsp1()} M1 = {M1} t-m <br> ";
-            checkSTR += $" {emsp1()} P2 = {P2} t <br> ";
-            checkSTR += $" {emsp1()} M2 = {M2} t-m <br> ";
+            checkSTR += $" {emsp1()} P1 = {outP1} t <br> ";
+            checkSTR += $" {emsp1()} M1 = {outM1c} t-m <br> ";
+            checkSTR += $" {emsp1()} P2 = {outP2} t <br> ";
+            checkSTR += $" {emsp1()} M2 = {outM2c} t-m <br> ";
 
             checkSTR += $" {emsp1()} be = {Facebeff} cm <br> ";
             checkSTR += $" {emsp1()} A = {FaceAeff} cm² <br> ";
@@ -645,8 +706,72 @@ namespace SinoTunnel
             checkSTR += $" {emsp1()} 容許抗彎壓應力 = {sg.Fac} kg/cm² <br> ";
             checkSTR += $" {emsp1()} 容許抗剪應力 = {sg.Fas} kg/cm² <br> ";
 
+            // (1) 鑄鐵環片外側板之檢測
             checkSTR += $" {emsp1()} (1)鑄鐵環片外側板之檢測 <br> ";
-            checkSTR += $" {emsp2()} σ = P1/A ";
+            checkSTR += $" {emsp2()} σ = P1/A ± (M1*y')/I <br> ";
+
+            string str = "";
+            if (P1tBool) str = $"< {sg.Fat} kg/cm² OK ";
+            else str = $"> {sg.Fat} kg/cm² NG ";
+            checkSTR += $" {emsp3()} σt = {outP1}*1000/{outFaceAeff} - {outM1c}*100000*{outFaceyBar}/{outFaceInertia}" +
+                $" = {outStressP1t} kg/cm² {str} <br> ";
+
+            if (P1cBool) str = $"< {sg.Fac} kg/cm² OK ";
+            else str = $"> {sg.Fac} kg/cm² NG ";
+            checkSTR += $" {emsp3()} σc = {outP1}*1000/{outFaceAeff} + {outM1c}*100000*({sg.t} - {outFaceyBar})/{outFaceInertia}" +
+                $" = {outStressP1c} kg/cm² {str} <br> ";
+
+            checkSTR += $" {emsp2()} σ = P2/A ± (M2*y')/I <br> ";
+
+            if (P2tBool) str = $"< {sg.Fat} kg/cm² OK ";
+            else str = $"> {sg.Fat} kg/cm² NG ";
+            checkSTR += $" {emsp3()} σt = {outP2}*1000/{outFaceAeff} - {outM2c}*100000*{outFaceyBar}/{outFaceInertia}" +
+                $" = {outStressP2t} kg/cm² {str} <br> ";
+
+            if (P2cBool) str = $"< {sg.Fac} kg/cm² OK ";
+            else str = $"> {sg.Fac} kg/cm² NG ";
+            checkSTR += $" {emsp3()} σc = {outP2}*1000/{outFaceAeff} + {outM2c}*100000*({sg.t} - {outFaceyBar})/{outFaceInertia}" +
+                $" = {outStressP2c} kg/cm² {str} <br> ";
+
+            // (2) 四邊固定支承矩形板彈性設計法
+            checkSTR += $" {emsp1()} (2)四邊固定支承矩形板彈性設計法 <br> ";
+            checkSTR += $" {emsp2()} t1 = {sg.t1} cm <br> ";
+            checkSTR += $" {emsp2()} lx = {sg.Rout* 2} * π * {sg.theta}/360 = {lx} m <br> ";
+            checkSTR += $" {emsp2()} ly = {ly} m <br> ";
+            checkSTR += $" {emsp2()} Pv = {outPv} kN/m² <br> ";
+            checkSTR += $" {emsp2()} C = ly/lx = {Math.Round(ly / lx, 4)} <br> ";
+            checkSTR += $" {emsp2()} vx = vy = 1 - 5/18 * C²/(1 + C⁴) = {outVx} <br> ";
+            checkSTR += $" {emsp2()} Wx = Pv/[(1/C)⁴ + 1] = {outWx} <br> ";
+            checkSTR += $" {emsp2()} Wy = Pv/(1 + C⁴) = {outWy} <br> ";
+
+            checkSTR += $" {emsp1()} 跨度中點 Mxmax = vx/24 * Wx * lx² = {outCenterMaxMx} kN-m <br> ";
+            checkSTR += $" {emsp1()} 跨度中點 Mymax = vy/24 * Wy * ly² = {outCenterMaxMy} kN-m <br> ";
+            checkSTR += $" {emsp1()} 固定邊平均 Mxmax = -1/12 * Wx * lx² = {outEdgeMaxMx} kN-m <br> ";
+            checkSTR += $" {emsp1()} 固定邊平均 Mymax = -1/12 * Wy * ly² = {outEdgeMaxMy} kN-m <br> ";
+
+            if (MxElasticBool) str = $"< {sg.Fat} kg/cm² OK";
+            else str = $"> {sg.Fat} kg/cm² NG";
+            checkSTR += $" {emsp2()} σ = My/I = {outElasStressX} {str} <br> ";
+
+            if (MyElasticBool) str = $"< {sg.Fat} kg/cm² OK";
+            else str = $"> {sg.Fat} kg/cm² NG";
+            checkSTR += $" {emsp2()} σ = My/I = {outElasStressY} {str} <br> ";
+
+            // (3)Seely 法
+            checkSTR += $" {emsp1()} (3)Seely法 <br> "; 
+            //checkSTR += $" <br> {image(@"images\鑄鐵環片Seely法.PNG")} <br> ";
+            checkSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片Seely法.PNG")} <br> ";
+            checkSTR += $" {emsp1()} t = {sg.t1} cm <br> ";
+            checkSTR += $" {emsp1()} lx = {lx} m 短邊 <br> ";
+            checkSTR += $" {emsp1()} ly = {ly} m 長邊 <br> ";
+            checkSTR += $" {emsp1()} Pv = {outPv} kN/m² <br> ";
+            checkSTR += $" {emsp1()} α = 短邊/長邊 = lx/ly = {outAlpha} <br> ";
+            checkSTR += $" {emsp1()} 查表得 β = {beta} <br> ";
+            checkSTR += $" {emsp1()} M = β * Pv * lx² = {outSeelyM} kN-m/m <br> ";
+            if (SeelyBool) str = $"< {sg.Fat} kg/cm² OK ";
+            else str = $"> {sg.Fat} kg/cm² NG ";
+            checkSTR += $" {emsp1()} σ = 6*M/t² = {outSeelyStress} kg/cm² {str} <br> ";
+
 
             return checkSTR;
         }
@@ -658,5 +783,20 @@ namespace SinoTunnel
         
         public string image(string str) { return $"<img src='{str}'></img> "; }
         #endregion
+
+
+        public void BetaAutoCatch()
+        {
+            double webLy = sg.width / 100; // m
+            double webLx = sg.Rout * 2 * Math.PI * sg.theta / 360; // m
+
+            double webAlpha = webLx / webLy;
+            double webBeta = Math.Round(0.0512 * Math.Pow(webAlpha, 3) - 0.0959 * Math.Pow(webAlpha, 2) + 0.0136 * webAlpha
+                + 0.0632, 2);
+
+            oExecuteSQL.UpdateData("STN_Section", "UID", sectionUID, "CastIronBeta", webBeta);
+            
+            
+        }
     }
 }
