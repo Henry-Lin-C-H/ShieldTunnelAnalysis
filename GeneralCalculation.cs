@@ -115,6 +115,9 @@ namespace SinoTunnel
 
             string checkSTR = ExportSGCheck();
             str += checkSTR;
+
+            string pushSTR = ExportSGPush();
+            str += pushSTR;
         }
 
         #region Props
@@ -380,39 +383,60 @@ namespace SinoTunnel
             else SeelyBool = false;
         }
 
+        double b1;
+        double b2;
+        double b3;
+
+        double ribBeff;
+        double ribB;
+        double LatAeff;
+        double Latybar;
+        double Latinertia;
+        double LatR;
+        double slRatio;
+        double e;
+        double eachP;
+        double eachM;
+        double fa;
+        double fb;
+
+        double fe;
+        double Cm;
+        double SFCM;
+        double SF;
         public void SGPush()
         {
-            double b1 = sg.t - sg.t1;
-            double b2 = b1;
-            double b3 = 0;
+            b1 = sg.t - sg.t1;
+            b2 = b1;
+            b3 = 0;
 
-            double beff = 20 * sg.t1;
-            double tempB = sg.theta / 360 * Math.PI * sg.Rout * 2 * 100;
-            if (beff > tempB) beff = tempB;
+            ribBeff = 20 * sg.t1;
+            ribB = sg.theta / 360 * Math.PI * sg.Rout * 2 * 100;
+            if (ribBeff > ribB) ribBeff = ribB;
 
-            double LatAeff = beff * sg.t1 + (b2 + b3) * sg.t3;
-            double Latybar = ((beff * sg.t1) * (sg.t - sg.t1 / 2) + (b2 * sg.t3) * (b2 / 2) + (b3 * sg.t3) * (sg.t3 / 2)) / LatAeff;
-            double Latinertia = (beff * Math.Pow(sg.t1, 3) / 12) + beff * sg.t1 * Math.Pow(sg.t - sg.t1 / 2 - Latybar, 2) +
+            LatAeff = ribBeff * sg.t1 + (b2 + b3) * sg.t3;
+            Latybar = ((ribBeff * sg.t1) * (sg.t - sg.t1 / 2) + (b2 * sg.t3) * (b2 / 2) + (b3 * sg.t3) * (sg.t3 / 2)) / LatAeff;
+            Latinertia = (ribBeff * Math.Pow(sg.t1, 3) / 12) + ribBeff * sg.t1 * Math.Pow(sg.t - sg.t1 / 2 - Latybar, 2) +
                 sg.t3 * Math.Pow(b2, 3) / 12 + sg.t3 * b2 * Math.Pow(Latybar - b2 / 2, 2) +
                 b3 * Math.Pow(sg.t3, 3) / 12 + b3 * sg.t3 * Math.Pow(Latybar - sg.t3 / 2, 2);
-            double LatR = Math.Pow(Latinertia / LatAeff, 0.5);
-            double slRatio = 1 * sg.width / LatR;
+            LatR = Math.Pow(Latinertia / LatAeff, 0.5);
+            slRatio = 1 * sg.width / LatR;
 
-            double e = Latybar - (sg.t - sg.t1 / 2) / 2; // cm
+            e = Latybar - (sg.t - sg.t1 / 2) / 2; // cm
 
-            double eachP = jackP * jackNum * sg.theta / 360; // t
+            eachP = jackP * jackNum * sg.theta / 360; // t
 
-            double eachM = eachP * e * 1000; // kg-cm 
-            double fa = eachP / LatAeff * 1000; // kg-cm
-            double fb = eachM * Latybar / Latinertia; // kg-cm
+            eachM = eachP * e * 1000; // kg-cm 
+            fa = eachP / LatAeff * 1000; // kg-cm
+            fb = eachM * Latybar / Latinertia; // kg-cm
 
-            double fe = 12 * Math.PI * Math.PI * sg.E / 100 / (23 * slRatio * slRatio);
+            fe = 12 * Math.PI * Math.PI * sg.E / 100 / (23 * slRatio * slRatio);
 
-            double Cm = 0.85;
+            Cm = 0.85;
 
-            double SFCM = fa / sg.Fac + Cm * fb / ((1 - fa / fe) * sg.Fat);
+            SFCM = fa / sg.Fac + Cm * fb / ((1 - fa / fe) * sg.Fat);
 
-            double SF = fa / sg.Fac + fb / sg.Fat;
+            SF = fa / sg.Fac + fb / sg.Fat;
         }
 
         public void SGPore()
@@ -774,6 +798,106 @@ namespace SinoTunnel
 
 
             return checkSTR;
+        }
+
+        public string ExportSGPush()
+        {
+            double outRibB = Math.Round(ribB, 1);
+            double outRibBeff = Math.Round(ribBeff, 1);
+            double outLatAeff = Math.Round(LatAeff, 2);
+            double outLatyBar = Math.Round(Latybar, 2);
+            double outLatinertia = Math.Round(Latinertia, 2);
+            double outLatR = Math.Round(LatR, 2);
+            double outslRatio = Math.Round(slRatio, 2);
+
+            double oute = Math.Round(e, 2);
+            double outfa = Math.Round(fa, 2);
+            double outfb = Math.Round(fb, 2);
+
+            double outfe = Math.Round(fe, 2);
+            double outSFCM = Math.Round(SFCM, 3);
+            double outSF = Math.Round(SF, 3);
+
+            string pushSTR = "";            
+
+            pushSTR += $"鑄鐵環片推力檢核 <br> ";
+
+            pushSTR += $" {emsp1()} <table style='text-align:left' border='0'> <tr> ";
+
+            pushSTR += $" <th> 環片外徑 D = </th> <th> {sg.Rout * 2} m </th> " +
+                $"<th> 楊式模數 E = </th> <th> {sg.E / 100} kg/m² </th> <tr>";
+            pushSTR += $" <th> 端點鋼板寬度 b1 = </th> <th> {b1} cm </th> " +
+                $"<th> 容許抗彎拉應力 Fat = </th> <th> {sg.Fat} kg/cm² </th> <tr>";
+            pushSTR += $" <th> 彎曲鋼板寬度 b2 = </th> <th> {b2} cm </th> " +
+                $"<th> 容許抗彎壓應力 Fac = </th> <th> {sg.Fac} kg/cm² </th> <tr>";
+            pushSTR += $" <th> 彎曲鋼板彎曲寬度 b3 = </th> <th> {b3} cm </th> " +
+                $"<th> 容許抗剪應力 Fas = </th> <th> {sg.Fas} kg/cm² </th> <tr>";
+            pushSTR += $" <th> 外緣面板厚度 t1 = </th> <th> {sg.t1} cm </th> <tr>";
+            pushSTR += $" <th> 縱肋板厚度 t3 = </th> <th> {sg.t3} cm </th> " +
+                $"<th> 單支千斤頂推力 = </th> <th> {jackP} t </th> <tr>";
+            pushSTR += $" <th> 環片厚度 t = </th> <th> {sg.t} cm </th> " +
+                $"<th> 千斤頂數量 = </th> <th> {jackNum} </th> <tr>";
+            pushSTR += $" <th> 環片寬度 = </th> <th> {sg.width} cm </th> <tr> ";
+            pushSTR += $" <th> 縱肋版相隔角度 θ = </th> <th> {sg.theta}° </th> <tr> ";
+
+            pushSTR += " </table>";
+            //pushSTR += $" {emsp1()} 環片外徑 D = {sg.Rout * 2} m <br> ";
+            //pushSTR += $" {emsp1()} 端點鋼板寬度 b1 = {sg.t - sg.t1} cm <br> ";
+            //pushSTR += $" {emsp1()} 彎曲鋼板寬度 b2 = {sg.t - sg.t1} cm <br> ";
+            //pushSTR += $" {emsp1()} 彎曲鋼板彎曲寬度 b3 = 0 cm <br> ";
+            //pushSTR += $" {emsp1()} 外緣面板厚度 t1 = {sg.t1} cm <br> ";
+            //pushSTR += $" {emsp1()} 縱肋板厚度 t3 = {sg.t3} cm <br> ";
+
+            //pushSTR += $" <br> {image(@"images\鑄鐵環片肋版參數.jpg")} <br> ";
+            pushSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片肋版參數.jpg")} <br> ";
+
+            pushSTR += $" {emsp1()} (1)有效寬度be <br> ";
+            pushSTR += $" {emsp2()} be = 20 * t1 = {20 * sg.t} cm <br> ";            
+            pushSTR += $" {emsp2()} b = θ/360 * π * D = {outRibB} <br> ";
+            string str = "";
+            if (ribB > ribBeff) str = $">";
+            else str = "<";
+            pushSTR += $" {emsp2()} be {str} b, 取 be = {outRibBeff} cm <br> ";
+
+            pushSTR += $" {emsp1()} (2)面積A, 慣性矩I, 迴轉半徑r, 長細比KL/r <br> ";
+            pushSTR += $" {emsp2()} 面積 A = {outRibBeff}*{sg.t1} + ({b2} + {b3}) * {sg.t3} = {outLatAeff} cm² <br> ";
+            pushSTR += $" {emsp2()} y' = [{outRibBeff}*{sg.t1}*{sg.t - sg.t1 / 2} + {b2}*{sg.t3}*({b2 / 2}/2)" +
+                $" + {b3}*{sg.t3}*({sg.t3}/2)]/{outLatAeff} = {outLatyBar} cm <br> ";
+            pushSTR += $" {emsp2()} 慣性矩 I = 1/12*{outRibBeff}*{sg.t1}³ + {outRibBeff}*{sg.t1}*({sg.t1 - sg.t1 / 2} - {outLatyBar})²" +
+                $" + 1/12*{sg.t3}*{b2}³ + {sg.t3}*{b2}*({outLatyBar} - {b2}/2)²" +
+                $" + 1/12*{b3}*{sg.t3}³ + {b3}*{sg.t3}*({outLatyBar} - {sg.t3}/2)²" +
+                $" = {outLatinertia} cm⁴ <br> ";
+            pushSTR += $" {emsp2()} 迴轉半徑 r = √(I/A) = {outLatR} cm <br> ";
+            pushSTR += $" {emsp2()} 長細比 KL/r = 1*50/{outLatR} = {outslRatio} <br> ";
+
+
+            pushSTR += $" {emsp1()} (3)偏心距 e 與受力 <br> ";
+            pushSTR += $" {emsp2()} e = {outLatyBar} - {sg.t - sg.t1 / 2}/2 = {oute} cm <br> ";
+            pushSTR += $" {emsp2()} 千斤頂之總推力 = {jackNum}*{jackP} = {jackNum * jackP} t <br> ";
+            pushSTR += $" {emsp2()} 每隻縱肋板受力 P = {jackNum * jackP}*{sg.theta}/360 = {eachP} t <br> ";
+            pushSTR += $" {emsp3()} M = P*e = {eachM} kg-cm <br> ";
+            pushSTR += $" {emsp3()} fa = P/A = {outfa} kg/cm² <br> ";
+            pushSTR += $" {emsp3()} fb = My/I = {outfb} kg/cm² <br> ";
+
+            pushSTR += $" {emsp1()} (4)安全係數 <br> ";
+            pushSTR += $" {emsp2()} 根據 AISC 規範 <br> ";
+
+            //pushSTR += $" <br> {image(@"images\鑄鐵環片推力安全係數檢核.JPG")} <br> ";
+            pushSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片推力安全係數檢核.JPG")} <br> ";
+
+            pushSTR += $" 其中 fe' = 12*π*E/[23*(KL/r)²] = {outfe} kg/cm² <br> ";
+            pushSTR += $" 令 Cm = {Cm} <br> ";
+            if (SFCM < 1) str = "< 1.0 OK";
+            else str = "> 1.0 NG";
+            pushSTR += $" fa/Fa + Cm*fb/[(1 - fa/fe')*Fb] = {outfa}/{sg.Fac} + {Cm}*{outfb}/[(1 - {outfa}/{outfe})*{sg.Fat}]" +
+                $" = {outSFCM} {str} <br> ";
+
+            if (SF < 1) str = "< 1.0 OK";
+            else str = "> 1.0 NG";
+            pushSTR += $" fa/Fa + fb/Fb = {outfa}/{sg.Fac} + {outfb}/{sg.Fat} = {outSF} {str} <br> ";
+
+
+            return pushSTR;
         }
 
         string emsp4() { return "&emsp; &emsp; &emsp; &emsp;"; }
