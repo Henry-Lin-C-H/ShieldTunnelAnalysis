@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,7 @@ namespace SinoTunnel
     {
         GetWebData p;      
         STN_VerticalStress verticalStress;
+        ExcuteSQL oExecuteSQL = new ExcuteSQL();
 
         public string outLooseFRatio = "";
 
@@ -276,8 +277,45 @@ namespace SinoTunnel
         }
         #endregion
 
+        void torsion()
+        {
+            TorsionStrainByEQAndExcavation(out string ss, out string sss, out string lls, out string fls,
+                out List<double> ODEStrain, out List<double> MDEStrain, out List<double> looseODEStrain, out List<double> looseMDEStrain);
+        }
+        public void F_Dia_C_PushAutoInput()
+        {
+            torsion();
+
+            double VerticalReduced = Math.Round(Math.Abs(0.067 * Math.Log(flexibilityRatio, Math.E) * (-1) - 0.3197), 2);
+            double LateralIncreased = Math.Round(0.0679 * Math.Log(flexibilityRatio, Math.E) + 0.1403, 2);
+
+            double K05UPDN = Math.Round(0.1147 * compressibilityRatio * (-1) + 0.5391, 2);
+            double K20UPDN = Math.Round(0.2507 * compressibilityRatio * (-1) + 1.8622, 2);
+            double K05TwoSides = Math.Round(0.1314 * compressibilityRatio * (-1) + 0.9231, 2);
+            double K20TwoSides = Math.Round(0.2089 * compressibilityRatio * (-1) + 1.0945, 2);
+
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "VerticalReduced", VerticalReduced);
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "LateralIncreased", LateralIncreased);
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "[K0.5UPDN]", K05UPDN);
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "[K2.0UPDN]", K20UPDN);
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "[K0.5TwoSides]", K05TwoSides);
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "[K2.0TwoSides]", K20TwoSides);
+        }
+
+        public void Loose_F_DiaAutoInput()
+        {
+            torsion();
+            double DVariation;
+            if (F < 4) DVariation = 1.32;
+            else DVariation = Math.Round(2.279 * Math.Log(F, Math.E) - 1.8136, 2);
+
+            oExecuteSQL.UpdateData("STN_EQProp", "Section", sectionUID, "DVariation", DVariation);
+        }
 
         #region 開挖荷重及地震扭曲引致之應變
+        double flexibilityRatio;
+        double compressibilityRatio;
+        double F;
         public void TorsionStrainByEQAndExcavation(out string outTorsionByEQAndExcavation, out string outLooseTosionByEqAndExcavation, out string outFlexibilityRatio, out string outCompressibilityRatio, out List<double> ODEStrain, out List<double> MDEStrain, out List<double> looseODEStrain, out List<double> looseMDEStrain)
         {
             outTorsionByEQAndExcavation = "";
@@ -297,7 +335,7 @@ namespace SinoTunnel
             double longtermPh2 = verticalStress.Ph2[0];
             double shortermPh2 = verticalStress.Ph2[1];
             */
-            double reductionK = 1.0;
+            
 
             double[] Phavg = new double[2];
             double[] K = new double[2];
@@ -332,16 +370,15 @@ namespace SinoTunnel
                 soilEm = verticalStress.shortTermSoilE;
                 chosenK = K[1];
                 chosenCondition = "短期荷重";
-            }                    
-            
+            }
 
             double momentOfInertia = p.segmentWidth * Math.Pow(p.segmentThickness, 3) / 12;
-
+            double reductionK = 1.0;
             double ss = (soilEm / (1 + soilU12));
-            double kk = 6 * segmentE1 *momentOfInertia * reductionK;
+            double kk = 6 * segmentE1 * momentOfInertia * reductionK;
             double mm = 1 - Math.Pow(segmentU12, 2);
             double rr = Math.Pow(p.segmentRadiusInter, 3);
-            double flexibilityRatio = ss / (kk / (mm * rr));
+            flexibilityRatio = ss / (kk / (mm * rr));
 
 
             double verticalReduced = p.verticalReduced;
@@ -355,7 +392,7 @@ namespace SinoTunnel
             double lateralStrain = (3 * p.segmentThickness * lateralValue) / (2 * p.segmentRadiusInter);
 
 
-            double compressibilityRatio = (soilEm / segmentE1) * (p.segmentRadiusInter / p.segmentThickness) * ((1 - Math.Pow(segmentU12, 2)) / ((1 + soilU12) * (1 - 2 * soilU12)));
+            compressibilityRatio = (soilEm / segmentE1) * (p.segmentRadiusInter / p.segmentThickness) * ((1 - Math.Pow(segmentU12, 2)) / ((1 + soilU12) * (1 - 2 * soilU12)));
 
             double TUPDN = Pv * p.segmentRadiusInter * (p.k05UPDN + (p.k20UPDN - p.k05UPDN) * ((chosenK - p.soilK05) / (p.soilK20 - p.soilK05)));
             double strainUPDN = TUPDN / (segmentE1 * p.segmentThickness);
@@ -575,7 +612,7 @@ namespace SinoTunnel
             double k = Math.Pow((2 * n_eqDensity - Math.Pow(n_eqDensity, 2)), 0.5) - n_eqDensity;
 
             double I1 = SGWidth * (Math.Pow(k * d, 3) / 3) + n * (density * (SGTH * SGWidth)) * Math.Pow(1 - k, 2) * d * d;
-            double F = (soilEm / segmentE1) * (Math.Pow(p.segmentRadiusInter, 3) / (6 * I1)) * ((1 - Math.Pow(segmentU12, 2)) / (1 + soilU12));
+            F = (soilEm / segmentE1) * (Math.Pow(p.segmentRadiusInter, 3) / (6 * I1)) * ((1 - Math.Pow(segmentU12, 2)) / (1 + soilU12));
 
             double P = (Math.Pow(2, 0.5) - (Math.PI / 4)) * Math.Pow(p.segmentRadiusInter, 2) * (verticalStress.soilavgUW / (p.segmentRadiusInter * Math.Pow(2,0.5)));
             double deltaDOverD = p.DVariation * P / soilEm;
@@ -832,6 +869,10 @@ namespace SinoTunnel
         {
             return $"<img src='{str}'></img> ";
         }
+
+
+        
+
 
     }
 }
