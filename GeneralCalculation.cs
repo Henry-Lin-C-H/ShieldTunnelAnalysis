@@ -118,6 +118,9 @@ namespace SinoTunnel
 
             string pushSTR = ExportSGPush();
             str += pushSTR;
+
+            string poreSTR = ExportPoreCheck();
+            str += poreSTR;
         }
 
         #region Props
@@ -439,11 +442,10 @@ namespace SinoTunnel
             SF = fa / sg.Fac + fb / sg.Fat;
         }
 
+        List<Tuple<double, double, double, double, double, double, string>> poreCheck =
+                new List<Tuple<double, double, double, double, double, double, string>>();
         public void SGPore()
-        {
-            List<Tuple<double, double, double, double, double, double, bool>> poreCheck =
-                new List<Tuple<double, double, double, double, double, double, bool>>();
-
+        {            
             for(int i = 0; i < totalCal.Count; i++)
             {
                 double m = totalCal[i].Item2 * 1.3 / p.newton / 2;
@@ -453,10 +455,11 @@ namespace SinoTunnel
                 double Vmax = Math.Pow(V1 * V1 + V2 * V2, 0.5);
                 double Fv = 5.2;
                 bool vCehck;
-                if (Vmax < Fv) vCehck = true;
-                else vCehck = false;
+                string checkSTR;
+                if (Vmax < Fv) { vCehck = true; checkSTR = "OK"; }
+                else { vCehck = false; checkSTR = "NG"; }
 
-                poreCheck.Add(Tuple.Create(m, q, V1, V2, Vmax, Fv, vCehck));
+                poreCheck.Add(Tuple.Create(m, q, V1, V2, Vmax, Fv, checkSTR));
             }
         }
         #endregion
@@ -898,6 +901,73 @@ namespace SinoTunnel
 
 
             return pushSTR;
+        }
+
+        public string ExportPoreCheck()
+        {
+            string poreSTR = "";
+
+            poreSTR += $"鑄鐵環片螺栓檢核";
+
+            double x1 = 0.125;
+            double x2 = 0.25;
+            double y1 = 0.0625;
+            double y2 = 0.075;
+            int n = 4;
+            //poreSTR += $" <br> {image("images\\鑄鐵環片螺栓.jpg")} <br> ";
+            poreSTR += $" {emsp1()} <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片螺栓.jpg")} <br> ";
+            poreSTR += $" {emsp1()} <table style='text-align:left' border='0'> <tr> ";
+            poreSTR += $" <th> t </th> <th> = {sg.t}cm </th> <tr> ";
+            poreSTR += $" <th> be </th> <th> = {Facebeff}cm </th> <tr> ";
+            poreSTR += $" <th> x1 </th> <th> = {x1 * 100}cm </th> <tr> ";
+            poreSTR += $" <th> x2 </th> <th> = {x2 * 100}cm </th> <tr> ";
+            poreSTR += $" <th> y1 </th> <th> = {y1 * 100}cm </th> <tr> ";
+            poreSTR += $" <th> y2 </th> <th> = {y2 * 100}cm </th> <tr> ";
+            poreSTR += $" <th> 螺栓孔數 n </th> <th> = {n} </th> <tr> ";
+            poreSTR += $" </table> ";
+
+            poreSTR += $" {emsp1()} 撓曲剪力 V1 = V/n <br> ";
+            poreSTR += $" {emsp1()} 扭轉剪力 V2 = M*y/Σd² <br> ";
+            poreSTR += $" {emsp1()} 最大剪力 Vmax = √(V1² + V2²) <br> ";
+            poreSTR += $" {emsp1()} 容許剪力 Fv (F8T, M24, 標準孔) Fv = 5.2t <br> ";
+
+            double deg;
+            string M;
+            string N;
+            string Q;
+            string M13;
+            string Q13;
+            string V1;
+            string V2;
+            string Vmax;
+            double Fv;
+            string ch;
+            string table = "";
+            table += $" {emsp1()} <table cellpadding='1' border='5' width='650'> <tr> ";
+            table += $" <th> 角度<br>(°) </th> <th> 彎矩<br>(kN-m) </th> <th> 軸力<br>(kN) </th> <th> 剪力<br>(kN) </th> " +
+                $"<th> 1.3彎矩<br>(0.5m寬)<br>(t-m) </th> <th> 1.3剪力<br>(0.5m寬)<br>(t-m) </th>" +
+                $"<th> V1<br>(t) </th> <th> V2<br>(t) </th> <th> Vmax<br>(t) </th> <th> Fv<br>(t) </th> <th> check </th> <tr> ";
+            for(int i = 0; i < totalCal.Count; i++)
+            {
+                deg = totalCal[i].Item1;
+                M = Math.Round(totalCal[i].Item2, 2).ToString("F");
+                N = Math.Round(totalCal[i].Item3, 2).ToString("F");
+                Q = Math.Round(totalCal[i].Item4, 2).ToString("F");
+                M13 = Math.Round(poreCheck[i].Item1, 2).ToString("F");
+                Q13 = Math.Round(poreCheck[i].Item2, 2).ToString("F");
+                V1 = Math.Round(poreCheck[i].Item3, 2).ToString("F");
+                V2 = Math.Round(poreCheck[i].Item4, 2).ToString("F");
+                Vmax = Math.Round(poreCheck[i].Item5, 2).ToString("F");
+                Fv = poreCheck[i].Item6;
+                ch = poreCheck[i].Item7;
+
+                table += $" <th> {deg} </th> <th> {M} </th> <th> {N} </th> <th> {Q} </th> <th> {M13} </th> <th> {Q13} </th>" +
+                    $" <th> {V1} </th> <th> {V2} </th> <th> {Vmax} </th> <th> {Fv} </th> <th> {ch} </th> <tr>";                
+            }
+            table += $" </table>";
+
+            poreSTR += table;
+            return poreSTR;
         }
 
         string emsp4() { return "&emsp; &emsp; &emsp; &emsp;"; }
