@@ -160,12 +160,14 @@
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tabControl3 = new System.Windows.Forms.TabControl();
             this.tabSection = new System.Windows.Forms.TabPage();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
             this.cbo_Section = new System.Windows.Forms.ComboBox();
             this.label74 = new System.Windows.Forms.Label();
             this.lbl_SectionFunction = new System.Windows.Forms.Label();
             this.lbl_ChosenProject = new System.Windows.Forms.Label();
             this.lbl_User = new System.Windows.Forms.Label();
+            this.label61 = new System.Windows.Forms.Label();
             this.label75 = new System.Windows.Forms.Label();
             this.label76 = new System.Windows.Forms.Label();
             this.label77 = new System.Windows.Forms.Label();
@@ -362,7 +364,6 @@
             this.選擇標案ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.imageList2 = new System.Windows.Forms.ImageList(this.components);
-            this.textBox1 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.輸入參數.SuspendLayout();
@@ -849,7 +850,7 @@
             this.tabControl1.Location = new System.Drawing.Point(3, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1056, 543);
+            this.tabControl1.Size = new System.Drawing.Size(1056, 545);
             this.tabControl1.TabIndex = 28;
             // 
             // 輸入參數
@@ -867,8 +868,8 @@
             this.輸入參數.Controls.Add(this.label59);
             this.輸入參數.Location = new System.Drawing.Point(4, 26);
             this.輸入參數.Name = "輸入參數";
-            this.輸入參數.Padding = new System.Windows.Forms.Padding(3);
-            this.輸入參數.Size = new System.Drawing.Size(1048, 513);
+            this.輸入參數.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.輸入參數.Size = new System.Drawing.Size(1048, 515);
             this.輸入參數.TabIndex = 0;
             this.輸入參數.Text = "斷面選單";
             this.輸入參數.UseVisualStyleBackColor = true;
@@ -1001,8 +1002,8 @@
             this.吊放等計算.Controls.Add(this.HangingVText);
             this.吊放等計算.Location = new System.Drawing.Point(4, 26);
             this.吊放等計算.Name = "吊放等計算";
-            this.吊放等計算.Padding = new System.Windows.Forms.Padding(3);
-            this.吊放等計算.Size = new System.Drawing.Size(1048, 513);
+            this.吊放等計算.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.吊放等計算.Size = new System.Drawing.Size(1048, 515);
             this.吊放等計算.TabIndex = 1;
             this.吊放等計算.Text = "吊放等計算";
             this.吊放等計算.UseVisualStyleBackColor = true;
@@ -1032,7 +1033,7 @@
             this.土壤E值.Controls.Add(this.ShorTermE1);
             this.土壤E值.Location = new System.Drawing.Point(4, 26);
             this.土壤E值.Name = "土壤E值";
-            this.土壤E值.Size = new System.Drawing.Size(1048, 513);
+            this.土壤E值.Size = new System.Drawing.Size(1048, 515);
             this.土壤E值.TabIndex = 2;
             this.土壤E值.Text = "土壤E值";
             this.土壤E值.UseVisualStyleBackColor = true;
@@ -1074,7 +1075,7 @@
             this.環片應變.Controls.Add(this.Cal03_output);
             this.環片應變.Location = new System.Drawing.Point(4, 26);
             this.環片應變.Name = "環片應變";
-            this.環片應變.Size = new System.Drawing.Size(1048, 513);
+            this.環片應變.Size = new System.Drawing.Size(1048, 515);
             this.環片應變.TabIndex = 3;
             this.環片應變.Text = "環片應變";
             this.環片應變.UseVisualStyleBackColor = true;
@@ -1216,7 +1217,7 @@
             this.環片分析.Controls.Add(this.tabControl2);
             this.環片分析.Location = new System.Drawing.Point(4, 26);
             this.環片分析.Name = "環片分析";
-            this.環片分析.Size = new System.Drawing.Size(1048, 513);
+            this.環片分析.Size = new System.Drawing.Size(1048, 515);
             this.環片分析.TabIndex = 4;
             this.環片分析.Text = "環片分析";
             this.環片分析.UseVisualStyleBackColor = true;
@@ -1229,7 +1230,7 @@
             this.tabControl2.Location = new System.Drawing.Point(0, 0);
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(1048, 513);
+            this.tabControl2.Size = new System.Drawing.Size(1048, 515);
             this.tabControl2.TabIndex = 28;
             // 
             // btn_ExcelOutput
@@ -1287,8 +1288,8 @@
             this.btn_ExcelOutput.Controls.Add(this.label29);
             this.btn_ExcelOutput.Location = new System.Drawing.Point(4, 26);
             this.btn_ExcelOutput.Name = "btn_ExcelOutput";
-            this.btn_ExcelOutput.Padding = new System.Windows.Forms.Padding(3);
-            this.btn_ExcelOutput.Size = new System.Drawing.Size(1040, 483);
+            this.btn_ExcelOutput.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.btn_ExcelOutput.Size = new System.Drawing.Size(1040, 485);
             this.btn_ExcelOutput.TabIndex = 0;
             this.btn_ExcelOutput.Text = "SAP分析";
             this.btn_ExcelOutput.UseVisualStyleBackColor = true;
@@ -1615,7 +1616,7 @@
             this.tabPage9.Controls.Add(this.splitContainer1);
             this.tabPage9.Location = new System.Drawing.Point(4, 26);
             this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage9.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.tabPage9.Size = new System.Drawing.Size(1040, 483);
             this.tabPage9.TabIndex = 1;
             this.tabPage9.Text = "SAP接觸深度";
@@ -1635,7 +1636,7 @@
             // 
             this.穩定性檢核.Location = new System.Drawing.Point(4, 26);
             this.穩定性檢核.Name = "穩定性檢核";
-            this.穩定性檢核.Size = new System.Drawing.Size(1048, 513);
+            this.穩定性檢核.Size = new System.Drawing.Size(1048, 515);
             this.穩定性檢核.TabIndex = 8;
             this.穩定性檢核.Text = "穩定性檢核";
             this.穩定性檢核.UseVisualStyleBackColor = true;
@@ -1646,7 +1647,7 @@
             this.參考用.Controls.Add(this.chart1);
             this.參考用.Location = new System.Drawing.Point(4, 26);
             this.參考用.Name = "參考用";
-            this.參考用.Size = new System.Drawing.Size(1048, 513);
+            this.參考用.Size = new System.Drawing.Size(1048, 515);
             this.參考用.TabIndex = 6;
             this.參考用.Text = "參考用";
             this.參考用.UseVisualStyleBackColor = true;
@@ -1656,7 +1657,7 @@
             this.網頁.Controls.Add(this.web);
             this.網頁.Location = new System.Drawing.Point(4, 26);
             this.網頁.Name = "網頁";
-            this.網頁.Size = new System.Drawing.Size(1048, 513);
+            this.網頁.Size = new System.Drawing.Size(1048, 515);
             this.網頁.TabIndex = 7;
             this.網頁.Text = "網頁";
             this.網頁.UseVisualStyleBackColor = true;
@@ -1667,7 +1668,7 @@
             this.web.Location = new System.Drawing.Point(0, 0);
             this.web.MinimumSize = new System.Drawing.Size(20, 20);
             this.web.Name = "web";
-            this.web.Size = new System.Drawing.Size(1048, 513);
+            this.web.Size = new System.Drawing.Size(1048, 515);
             this.web.TabIndex = 0;
             // 
             // splitContainer2
@@ -1694,6 +1695,7 @@
             this.tabControl3.Controls.Add(this.tabContDepth);
             this.tabControl3.Controls.Add(this.tabOthers);
             this.tabControl3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl3.Font = new System.Drawing.Font("微軟正黑體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.tabControl3.Location = new System.Drawing.Point(0, 0);
             this.tabControl3.Name = "tabControl3";
             this.tabControl3.SelectedIndex = 0;
@@ -1703,6 +1705,9 @@
             // 
             // tabSection
             // 
+            this.tabSection.BackColor = System.Drawing.Color.Transparent;
+            this.tabSection.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("tabSection.BackgroundImage")));
+            this.tabSection.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.tabSection.Controls.Add(this.textBox1);
             this.tabSection.Controls.Add(this.button2);
             this.tabSection.Controls.Add(this.cbo_Section);
@@ -1710,19 +1715,26 @@
             this.tabSection.Controls.Add(this.lbl_SectionFunction);
             this.tabSection.Controls.Add(this.lbl_ChosenProject);
             this.tabSection.Controls.Add(this.lbl_User);
+            this.tabSection.Controls.Add(this.label61);
             this.tabSection.Controls.Add(this.label75);
             this.tabSection.Controls.Add(this.label76);
             this.tabSection.Controls.Add(this.label77);
-            this.tabSection.Location = new System.Drawing.Point(4, 22);
+            this.tabSection.Location = new System.Drawing.Point(4, 25);
             this.tabSection.Name = "tabSection";
-            this.tabSection.Size = new System.Drawing.Size(1062, 549);
+            this.tabSection.Size = new System.Drawing.Size(1062, 546);
             this.tabSection.TabIndex = 4;
             this.tabSection.Text = "斷面選單";
-            this.tabSection.UseVisualStyleBackColor = true;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(725, 329);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(233, 23);
+            this.textBox1.TabIndex = 12;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(663, 51);
+            this.button2.Location = new System.Drawing.Point(810, 300);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 11;
@@ -1735,7 +1747,7 @@
             this.cbo_Section.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.cbo_Section.FormattingEnabled = true;
             this.cbo_Section.ItemHeight = 17;
-            this.cbo_Section.Location = new System.Drawing.Point(127, 84);
+            this.cbo_Section.Location = new System.Drawing.Point(148, 175);
             this.cbo_Section.Name = "cbo_Section";
             this.cbo_Section.Size = new System.Drawing.Size(348, 25);
             this.cbo_Section.TabIndex = 10;
@@ -1745,7 +1757,8 @@
             // 
             this.label74.AutoSize = true;
             this.label74.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.label74.Location = new System.Drawing.Point(8, 125);
+            this.label74.ForeColor = System.Drawing.Color.White;
+            this.label74.Location = new System.Drawing.Point(29, 216);
             this.label74.Name = "label74";
             this.label74.Size = new System.Drawing.Size(112, 25);
             this.label74.TabIndex = 1;
@@ -1755,7 +1768,8 @@
             // 
             this.lbl_SectionFunction.AutoSize = true;
             this.lbl_SectionFunction.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.lbl_SectionFunction.Location = new System.Drawing.Point(122, 125);
+            this.lbl_SectionFunction.ForeColor = System.Drawing.Color.White;
+            this.lbl_SectionFunction.Location = new System.Drawing.Point(143, 216);
             this.lbl_SectionFunction.Name = "lbl_SectionFunction";
             this.lbl_SectionFunction.Size = new System.Drawing.Size(177, 25);
             this.lbl_SectionFunction.TabIndex = 2;
@@ -1765,7 +1779,8 @@
             // 
             this.lbl_ChosenProject.AutoSize = true;
             this.lbl_ChosenProject.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.lbl_ChosenProject.Location = new System.Drawing.Point(122, 50);
+            this.lbl_ChosenProject.ForeColor = System.Drawing.Color.White;
+            this.lbl_ChosenProject.Location = new System.Drawing.Point(143, 141);
             this.lbl_ChosenProject.Name = "lbl_ChosenProject";
             this.lbl_ChosenProject.Size = new System.Drawing.Size(153, 25);
             this.lbl_ChosenProject.TabIndex = 2;
@@ -1775,17 +1790,30 @@
             // 
             this.lbl_User.AutoSize = true;
             this.lbl_User.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.lbl_User.Location = new System.Drawing.Point(122, 15);
+            this.lbl_User.ForeColor = System.Drawing.Color.White;
+            this.lbl_User.Location = new System.Drawing.Point(143, 106);
             this.lbl_User.Name = "lbl_User";
             this.lbl_User.Size = new System.Drawing.Size(55, 25);
             this.lbl_User.TabIndex = 2;
             this.lbl_User.Text = "User";
             // 
+            // label61
+            // 
+            this.label61.AutoSize = true;
+            this.label61.Font = new System.Drawing.Font("微軟正黑體", 30F, System.Drawing.FontStyle.Bold);
+            this.label61.ForeColor = System.Drawing.Color.White;
+            this.label61.Location = new System.Drawing.Point(49, 37);
+            this.label61.Name = "label61";
+            this.label61.Size = new System.Drawing.Size(342, 50);
+            this.label61.TabIndex = 2;
+            this.label61.Text = "潛盾隧道分析設計";
+            // 
             // label75
             // 
             this.label75.AutoSize = true;
             this.label75.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.label75.Location = new System.Drawing.Point(8, 15);
+            this.label75.ForeColor = System.Drawing.Color.White;
+            this.label75.Location = new System.Drawing.Point(29, 106);
             this.label75.Name = "label75";
             this.label75.Size = new System.Drawing.Size(92, 25);
             this.label75.TabIndex = 2;
@@ -1795,7 +1823,8 @@
             // 
             this.label76.AutoSize = true;
             this.label76.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.label76.Location = new System.Drawing.Point(8, 50);
+            this.label76.ForeColor = System.Drawing.Color.White;
+            this.label76.Location = new System.Drawing.Point(29, 141);
             this.label76.Name = "label76";
             this.label76.Size = new System.Drawing.Size(112, 25);
             this.label76.TabIndex = 3;
@@ -1805,7 +1834,8 @@
             // 
             this.label77.AutoSize = true;
             this.label77.Font = new System.Drawing.Font("微軟正黑體", 15F, System.Drawing.FontStyle.Bold);
-            this.label77.Location = new System.Drawing.Point(6, 84);
+            this.label77.ForeColor = System.Drawing.Color.White;
+            this.label77.Location = new System.Drawing.Point(27, 175);
             this.label77.Name = "label77";
             this.label77.Size = new System.Drawing.Size(112, 25);
             this.label77.TabIndex = 4;
@@ -1817,9 +1847,9 @@
             this.tabTunnel.Controls.Add(this.groupBox2);
             this.tabTunnel.Controls.Add(this.gBox_Grout);
             this.tabTunnel.Controls.Add(this.gBox_SGProp);
-            this.tabTunnel.Location = new System.Drawing.Point(4, 22);
+            this.tabTunnel.Location = new System.Drawing.Point(4, 25);
             this.tabTunnel.Name = "tabTunnel";
-            this.tabTunnel.Size = new System.Drawing.Size(1062, 549);
+            this.tabTunnel.Size = new System.Drawing.Size(1062, 551);
             this.tabTunnel.TabIndex = 5;
             this.tabTunnel.Text = "隧道環片分析";
             this.tabTunnel.UseVisualStyleBackColor = true;
@@ -2437,10 +2467,10 @@
             // tabConnect
             // 
             this.tabConnect.Controls.Add(this.gpConnectTunnel);
-            this.tabConnect.Location = new System.Drawing.Point(4, 22);
+            this.tabConnect.Location = new System.Drawing.Point(4, 25);
             this.tabConnect.Name = "tabConnect";
-            this.tabConnect.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConnect.Size = new System.Drawing.Size(1062, 549);
+            this.tabConnect.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabConnect.Size = new System.Drawing.Size(1062, 551);
             this.tabConnect.TabIndex = 1;
             this.tabConnect.Text = "聯絡通道分析";
             this.tabConnect.UseVisualStyleBackColor = true;
@@ -2455,7 +2485,7 @@
             this.gpConnectTunnel.ForeColor = System.Drawing.Color.Blue;
             this.gpConnectTunnel.Location = new System.Drawing.Point(3, 3);
             this.gpConnectTunnel.Name = "gpConnectTunnel";
-            this.gpConnectTunnel.Size = new System.Drawing.Size(1056, 543);
+            this.gpConnectTunnel.Size = new System.Drawing.Size(1056, 545);
             this.gpConnectTunnel.TabIndex = 12;
             this.gpConnectTunnel.TabStop = false;
             this.gpConnectTunnel.Text = "聯絡通道分析 :";
@@ -2682,9 +2712,9 @@
             // tabSteelTunnel
             // 
             this.tabSteelTunnel.Controls.Add(this.gpSteelTunnel);
-            this.tabSteelTunnel.Location = new System.Drawing.Point(4, 22);
+            this.tabSteelTunnel.Location = new System.Drawing.Point(4, 25);
             this.tabSteelTunnel.Name = "tabSteelTunnel";
-            this.tabSteelTunnel.Size = new System.Drawing.Size(1062, 549);
+            this.tabSteelTunnel.Size = new System.Drawing.Size(1062, 551);
             this.tabSteelTunnel.TabIndex = 2;
             this.tabSteelTunnel.Text = "鋼環片分析";
             this.tabSteelTunnel.UseVisualStyleBackColor = true;
@@ -2700,7 +2730,7 @@
             this.gpSteelTunnel.ForeColor = System.Drawing.Color.Blue;
             this.gpSteelTunnel.Location = new System.Drawing.Point(0, 0);
             this.gpSteelTunnel.Name = "gpSteelTunnel";
-            this.gpSteelTunnel.Size = new System.Drawing.Size(1062, 549);
+            this.gpSteelTunnel.Size = new System.Drawing.Size(1062, 551);
             this.gpSteelTunnel.TabIndex = 15;
             this.gpSteelTunnel.TabStop = false;
             this.gpSteelTunnel.Text = "鋼環片分析 :";
@@ -3147,9 +3177,9 @@
             // tabSiteTunnel
             // 
             this.tabSiteTunnel.Controls.Add(this.gpSiteTunnel);
-            this.tabSiteTunnel.Location = new System.Drawing.Point(4, 22);
+            this.tabSiteTunnel.Location = new System.Drawing.Point(4, 25);
             this.tabSiteTunnel.Name = "tabSiteTunnel";
-            this.tabSiteTunnel.Size = new System.Drawing.Size(1062, 549);
+            this.tabSiteTunnel.Size = new System.Drawing.Size(1062, 551);
             this.tabSiteTunnel.TabIndex = 3;
             this.tabSiteTunnel.Text = "場鑄環片分析";
             this.tabSiteTunnel.UseVisualStyleBackColor = true;
@@ -3163,7 +3193,7 @@
             this.gpSiteTunnel.ForeColor = System.Drawing.Color.Blue;
             this.gpSiteTunnel.Location = new System.Drawing.Point(0, 0);
             this.gpSiteTunnel.Name = "gpSiteTunnel";
-            this.gpSiteTunnel.Size = new System.Drawing.Size(1062, 549);
+            this.gpSiteTunnel.Size = new System.Drawing.Size(1062, 551);
             this.gpSiteTunnel.TabIndex = 14;
             this.gpSiteTunnel.TabStop = false;
             this.gpSiteTunnel.Text = "場鑄環片分析 :";
@@ -3496,9 +3526,9 @@
             // tabContDepth
             // 
             this.tabContDepth.Controls.Add(this.FigPanel);
-            this.tabContDepth.Location = new System.Drawing.Point(4, 22);
+            this.tabContDepth.Location = new System.Drawing.Point(4, 25);
             this.tabContDepth.Name = "tabContDepth";
-            this.tabContDepth.Size = new System.Drawing.Size(1062, 549);
+            this.tabContDepth.Size = new System.Drawing.Size(1062, 551);
             this.tabContDepth.TabIndex = 6;
             this.tabContDepth.Text = "接觸深度分析";
             this.tabContDepth.UseVisualStyleBackColor = true;
@@ -3546,7 +3576,7 @@
             this.FigPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.FigPanel.Location = new System.Drawing.Point(0, 0);
             this.FigPanel.Name = "FigPanel";
-            this.FigPanel.Size = new System.Drawing.Size(1062, 549);
+            this.FigPanel.Size = new System.Drawing.Size(1062, 551);
             this.FigPanel.TabIndex = 25;
             // 
             // Fig04
@@ -3886,16 +3916,17 @@
             // tabOthers
             // 
             this.tabOthers.Controls.Add(this.tabControl1);
-            this.tabOthers.Location = new System.Drawing.Point(4, 22);
+            this.tabOthers.Location = new System.Drawing.Point(4, 25);
             this.tabOthers.Name = "tabOthers";
-            this.tabOthers.Padding = new System.Windows.Forms.Padding(3);
-            this.tabOthers.Size = new System.Drawing.Size(1062, 549);
+            this.tabOthers.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabOthers.Size = new System.Drawing.Size(1062, 551);
             this.tabOthers.TabIndex = 0;
             this.tabOthers.Text = "其他分析";
             this.tabOthers.UseVisualStyleBackColor = true;
             // 
             // menuStrip1
             // 
+            this.menuStrip1.Font = new System.Drawing.Font("微軟正黑體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.結束ToolStripMenuItem,
             this.選擇標案ToolStripMenuItem});
@@ -3908,14 +3939,14 @@
             // 結束ToolStripMenuItem
             // 
             this.結束ToolStripMenuItem.Name = "結束ToolStripMenuItem";
-            this.結束ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
+            this.結束ToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.結束ToolStripMenuItem.Text = "結束";
             this.結束ToolStripMenuItem.Click += new System.EventHandler(this.結束ToolStripMenuItem_Click);
             // 
             // 選擇標案ToolStripMenuItem
             // 
             this.選擇標案ToolStripMenuItem.Name = "選擇標案ToolStripMenuItem";
-            this.選擇標案ToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
+            this.選擇標案ToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
             this.選擇標案ToolStripMenuItem.Text = "標案選單";
             this.選擇標案ToolStripMenuItem.Click += new System.EventHandler(this.選擇標案ToolStripMenuItem_Click);
             // 
@@ -3931,13 +3962,6 @@
             this.imageList2.ImageSize = new System.Drawing.Size(16, 16);
             this.imageList2.TransparentColor = System.Drawing.Color.Transparent;
             // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(609, 84);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(233, 22);
-            this.textBox1.TabIndex = 12;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -3945,6 +3969,7 @@
             this.ClientSize = new System.Drawing.Size(1070, 599);
             this.Controls.Add(this.splitContainer2);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
@@ -4347,6 +4372,7 @@
         private System.Windows.Forms.GroupBox groupBox7;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label61;
     }
 }
 

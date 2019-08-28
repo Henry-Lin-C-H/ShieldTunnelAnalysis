@@ -168,7 +168,7 @@ namespace SinoTunnel
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Text = "SinoTunnel " + Application.ProductVersion;
+            this.Text = "潛盾隧道分析－SinoTunnel " + Application.ProductVersion;
             lbl_User.Text = $"{appGlobal.UserID} {appGlobal.UserName} {appGlobal.UserEmail}";
             cbo_LoadingTerm.Items.Add("長期載重");           
             cbo_LoadingTerm.Items.Add("短期載重");
@@ -1320,15 +1320,15 @@ namespace SinoTunnel
 
         private void button2_Click(object sender, EventArgs e)
         {
-            //oGeneralCal = new GeneralCalculation(sectionUID, "");
-            //oGeneralCal.Process(out string str);
+            oGeneralCal = new GeneralCalculation(sectionUID, "");
+            oGeneralCal.Process(out string str);
 
-            //web.DocumentText = str;
-            //textBox1.Text = str;
+            web.DocumentText = str;
+            textBox1.Text = str;
 
-            STN_StrainCheck oSTN_StrainCheck = new STN_StrainCheck(sectionUID, "win");
-            oSTN_StrainCheck.F_Dia_C_PushAutoInput();
-            oSTN_StrainCheck.Loose_F_DiaAutoInput();
+            //STN_StrainCheck oSTN_StrainCheck = new STN_StrainCheck(sectionUID, "win");
+            //oSTN_StrainCheck.F_Dia_C_PushAutoInput();
+            //oSTN_StrainCheck.Loose_F_DiaAutoInput();
         }
     }
 
