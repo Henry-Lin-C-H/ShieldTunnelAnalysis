@@ -696,7 +696,7 @@ namespace SinoTunnel
                         outLooseFRatio += $" &emsp; 隧道平均半徑 R = {p.segmentRadiusInter} m <br> ";
                         outLooseFRatio += $" &emsp; 隧道厚度 t = {p.segmentThickness} m <br> ";
                         outLooseFRatio += $" <br> ";
-                        outLooseFRatio += $" &emsp; n = Es/E1 = {p.steelEs}/{segmentE1} = {n} <br> ";
+                        outLooseFRatio += $" &emsp; n = Es/E1 = {p.steelEs*100}/{segmentE1} = {n} <br> ";
                         outLooseFRatio += $" &emsp; ρ = As/(b*h) = {As}/({SGWidth*100}*{SGTH*100}) = {density} &emsp; nρ = {n_eqDensity} <br> ";
                         outLooseFRatio += $" &emsp; d = {p.segmentThickness - 0.06} m &emsp; h = {p.segmentThickness} <br> ";
                         outLooseFRatio += $" &emsp; k = √[2nρ - (nρ)²] - nρ = {k} <br> ";
