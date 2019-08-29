@@ -267,7 +267,7 @@ namespace SinoTunnel
                     else
                         E1Top = 350 * Top_Suδv * Pv1Top;
                 }                    
-                else E1Top = Ecal * Top_N;                
+                else { E1Top = Ecal * Top_N; E1Center = Ecal * Top_N; }
 
                 if (Bot_SoilType == "CL")
                 {
@@ -276,7 +276,7 @@ namespace SinoTunnel
                     else
                         E2Bot = 350 * Bot_Suδv * Pv2Bot;
                 }                    
-                else E2Bot = Ecal * Bot_N;
+                else { E2Bot = Ecal * Bot_N; E2Center = Ecal * Bot_N; }
 
                 if(crossLayer)
                     Eavg = ((E1Center * PL1) + (E2Center * PL2)) / (PL1 + PL2);
