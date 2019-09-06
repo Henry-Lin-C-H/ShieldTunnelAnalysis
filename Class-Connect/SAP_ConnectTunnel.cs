@@ -11,6 +11,7 @@ using NPOI;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 //using STN_SQL;
+using SinoTunnelFile;
 
 namespace SinoTunnel
 {
@@ -21,7 +22,7 @@ namespace SinoTunnel
         GetWebData p;
         STN_VerticalStress verticalStress;
         Excel2Word word = new Excel2Word();
-
+        SinoTunnelFile.UploadFile oUploadFile = new UploadFile();
 
         string sectionUID = "";
         string DefaultfilePath = "O:\\ADMIN\\5028Z-3D自動化設計(II) - 潛盾隧道工程SinoTunnel\\09-軟體\\SinoTunnel_WinForm\\Normal_Case_Raw.xlsx";
@@ -102,7 +103,11 @@ namespace SinoTunnel
             names.Add("Case - Static 2 - NL Load App");
             names.Add("Combination Definitions");
             names.Add("Program Control");
-            string wordpath = xfileSavingPath.Replace(".xlsx", $".docx");
+            string[] wordtemp = xfileSavingPath.Split('\\');
+            string wordpath = "";
+            for(int i = 0; i < wordtemp.Length - 1; i++) { wordpath += wordtemp[i]; wordpath += "\\"; }
+            wordpath += "ConnectTunnel.docx";
+            //string wordpath = xfileSavingPath.Replace(".xlsx", $".docx");
             word.Add(inputgPath, names, false, false);
 
             if (excelOnly) return;
@@ -111,7 +116,7 @@ namespace SinoTunnel
 
             word.Add(outputPath, names, true, false);
             word.FileSaving(wordpath);
-
+            oUploadFile.UploadToServer(sectionUID, wordpath);
 
             string TR = "TR";            
             List<Tuple<string, double, double, double>> outData = new List<Tuple<string, double, double, double>>();

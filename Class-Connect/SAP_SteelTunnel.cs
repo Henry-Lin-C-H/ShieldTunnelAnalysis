@@ -10,6 +10,7 @@ using NPOI;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 //using STN_SQL;
+using SinoTunnelFile;
 
 namespace SinoTunnel
 {
@@ -21,6 +22,7 @@ namespace SinoTunnel
         GetWebData p;
         STN_VerticalStress verticalStress;
         Excel2Word word = new Excel2Word();
+        SinoTunnelFile.UploadFile oUploadFile = new UploadFile();
 
         string sectionUID = "";
         //string DefaultfilePath = "O:\\ADMIN\\5028Z-3D自動化設計(II) - 潛盾隧道工程SinoTunnel\\09-軟體\\SinoTunnel_WinForm\\Bauckup\\DoubleRing_LongTerm_Input_Raw.xlsx";
@@ -212,9 +214,7 @@ namespace SinoTunnel
             names.Add("Case - Static 1 - Load Assigns");
             names.Add("Case - Static 2 - NL Load App");
             names.Add("Combination Definitions");
-            names.Add("Program Control");
-            string wordpath = xfileSavingPath.Replace(".xlsx", $".docx");
-            word.Add(inputgPath, names, false, true);
+            names.Add("Program Control");            
 
             if (excelOnly) return;
 
@@ -226,8 +226,21 @@ namespace SinoTunnel
             }
             SAPCalculation(inputgPath, "DL+SOIL (NL)", outputPath, "Steel", RealTimes, loadType);
 
-            word.Add(outputPath, names, true, true);
-            word.FileSaving(wordpath);
+            if(RealTimes == 4)
+            {
+                string[] wordtemp = xfileSavingPath.Split('\\');
+                string wordpath = "";
+                for (int i = 0; i < wordtemp.Length - 1; i++) { wordpath += wordtemp[i]; wordpath += "\\"; }
+                wordpath += $"{condition}.docx";
+                //string wordpath = xfileSavingPath.Replace(".xlsx", $".docx");
+                word.Add(inputgPath, names, false, true);
+
+                word.Add(outputPath, names, true, true);
+                word.FileSaving(wordpath);
+                oUploadFile.UploadToServer(sectionUID, wordpath);
+            }
+
+            
         }
 
         #region Loading Coordinates ; Joint Restraint Assignments 
