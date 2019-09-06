@@ -16,6 +16,7 @@ using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using System.Windows.Media;
 using System.Windows.Forms.DataVisualization.Charting;
+using SinoTunnelFile;
 
 namespace SinoTunnel
 {
@@ -31,6 +32,7 @@ namespace SinoTunnel
         SAP_ConnectTunnel oConnectTunnel;
         SAP_SteelTunnel oSteelTunnel;
         SAP_SiteTunnel oSiteTunnel;
+        
 
         SAP_SegmentProcess sapCal;
         string sectionUID = "0bd202ef-ddcc-4cbc-b994-bb229fe3f4c2";        
@@ -1252,8 +1254,9 @@ namespace SinoTunnel
             //{
 
             //}
-            oSteelTunnel.Process(file, "SteelTunnelOrigin", excelOnly, 0, steelContDepth);
-            oSteelTunnel.Process(file, "SteelTunnelCut", excelOnly, 0, steelContDepth);
+            int repeat = 0;
+            oSteelTunnel.Process(file, "SteelTunnelOrigin", excelOnly, repeat, steelContDepth);
+            oSteelTunnel.Process(file, "SteelTunnelCut", excelOnly, repeat, steelContDepth);
             MessageBox.Show("OK");
             excelOnly = false;
         }
@@ -1320,12 +1323,13 @@ namespace SinoTunnel
 
         private void button2_Click(object sender, EventArgs e)
         {
-            oGeneralCal = new GeneralCalculation(sectionUID, "");
-            oGeneralCal.Process(out string str);
+            //oGeneralCal = new GeneralCalculation(sectionUID, "");
+            //oGeneralCal.Process(out string str);
 
-            web.DocumentText = str;
-            textBox1.Text = str;
-
+            //web.DocumentText = str;
+            //textBox1.Text = str;
+            SinoTunnelFile.UploadFile oUploadFile = new UploadFile();
+            string uploadResult = oUploadFile.UploadToServer(sectionUID, "E:\\SAP2000API\\!TestingData\\20190827_Record\\03_\\DQ122_VariationofDiameter.docx");
             //STN_StrainCheck oSTN_StrainCheck = new STN_StrainCheck(sectionUID, "win");
             //oSTN_StrainCheck.F_Dia_C_PushAutoInput();
             //oSTN_StrainCheck.Loose_F_DiaAutoInput();
