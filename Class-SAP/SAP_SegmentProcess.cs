@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using NPOI;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using SinoTunnelFile;
 
 namespace SinoTunnel
 {
@@ -32,6 +33,7 @@ namespace SinoTunnel
         int ret;
         IWorkbook wb;
         Excel2Word word = new Excel2Word();
+        SinoTunnelFile.UploadFile oUploadfile = new UploadFile();
 
         string sectionUID = "";
         string groutingfilePath = "O:\\ADMIN\\5028Z-3D自動化設計(II) - 潛盾隧道工程SinoTunnel\\09-軟體\\SinoTunnel_WinForm\\Grouting_Input_Raw.xlsx";
@@ -233,7 +235,11 @@ namespace SinoTunnel
             names.Add("Case - Static 1 - Load Assigns");
             names.Add("Combination Definitions");
             names.Add("Program Control");
-            string wordpath = originalPath.Replace(".xlsx", $".docx");
+            string[] wordtemp = originalPath.Split('\\');
+            string wordpath = "";
+            for(int i = 0; i < wordtemp.Length - 1; i++) { wordpath += wordtemp[i]; wordpath += "\\"; }
+            wordpath += "Grouting.docx";
+            //string wordpath = originalPath.Replace(".xlsx", $"_Grouting.docx");
             word.Add(fileSavingPath, names, false, false);
 
             if (excelOnly)
@@ -319,6 +325,7 @@ namespace SinoTunnel
 
             word.Add(resultPath, names, true, false);
             word.FileSaving(wordpath);
+            oUploadfile.UploadToServer(sectionUID, wordpath);
 
             Mmax = maxM;
             Pmax = maxP;
@@ -575,8 +582,16 @@ namespace SinoTunnel
             names.Add("Case - Static 2 - NL Load App");
             names.Add("Combination Definitions");
             names.Add("Program Control");
-            string wordpath = fileSavingPath.Replace(".xlsx", $".docx");
-            word.Add(fileSavingProgress[times], names, false, false);
+            string[] wordtemp = fileSavingPath.Split('\\');
+            string wordpath = "";
+            if(realTimes == 4)
+            {
+                for (int i = 0; i < wordtemp.Length - 1; i++) { wordpath += wordtemp[i]; wordpath += "\\"; }
+                wordpath += $"{condition}.docx";
+                //string wordpath = fileSavingPath.Replace(".xlsx", $".docx");
+                word.Add(fileSavingProgress[times], names, false, false);
+            }
+            
 
             getResult = true;//TEMP   0.33直徑與地震載重使用，只有當直徑變化過目標值後再擷取分析結果，TEMP
 
@@ -739,6 +754,7 @@ namespace SinoTunnel
             {
                 word.Add(resultPath[times], names, true, false);
                 word.FileSaving(wordpath);
+                oUploadfile.UploadToServer(sectionUID, wordpath);
             }            
 
             maxM = 0;
