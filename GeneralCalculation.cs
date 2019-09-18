@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,24 +32,37 @@ namespace SinoTunnel
         STN_VerticalStress oSTN_VerticalStress;
         ExcuteSQL oExecuteSQL = new ExcuteSQL();
 
+        double eta; // η
+        double xi; // ξ
+
+        bool situation;
         public GeneralCalculation(string sectionUID, string condition)
         {
+            switch (condition.ToUpper().ToString())
+            {
+                case "WEBFORM": situation = true; break;
+                default: situation = false; break;
+            }
+
             this.sectionUID = sectionUID;
             this.p = new GetWebData(sectionUID);
             this.oSTN_VerticalStress = new STN_VerticalStress(sectionUID, "WEBFORM");
-            sg.Rout = p.segmentRadiusOut; // m
-            sg.width = p.segmentWidth * 100; // cm
-            sg.UW = 71.05; //kN/m²
-            sg.t1 = 2.8; // cm
-            sg.t2 = 2.8; // cm
-            sg.t3 = 2.8; // cm
-            sg.t = 0.2 * 100; // cm
-            sg.theta = 7.2; // theta
-            sg.Fy = 2500; // kg/cm²
-            sg.E = 1.7E8; // kN/m²
-            sg.Fat = 1900; // kg/cm²
-            sg.Fac = 2200; // kg/cm²
-            sg.Fas = 1300; // kg/cm²
+            sg.Rout = p.IronDout / 2; // m
+            sg.width = p.IronWidth * 100; // cm
+            //sg.UW = 71.05; //kN/m²
+            sg.UW = p.IronUW; //kN/m²
+            sg.t1 = p.Iront1; // cm
+            sg.t2 = p.Iront2; // cm
+            sg.t3 = p.Iront3; // cm
+            sg.t = p.Iront * 100; // cm
+            sg.theta = p.IronRibSpacing; // theta
+            sg.Fy = p.IronFy; // kg/cm²
+            sg.E = p.IronEd; // kN/m²
+            sg.Fat = p.IronFat; // kg/cm²
+            sg.Fac = p.IronFac; // kg/cm²
+            sg.Fas = p.IronFas; // kg/cm²
+            this.eta = p.IronStiffReduction; // η
+            this.xi = p.IronMCorrect; // ξ
         }
 
         double beta;
@@ -57,10 +70,7 @@ namespace SinoTunnel
         double Facebeff;
         double FaceAeff;
         double Faceybar;
-        double Faceinertia;
-
-        double eta = 0.83; // η
-        double xi = 0.3; // ξ
+        double Faceinertia;        
 
         double Ks;
         double delta; // δ
@@ -77,20 +87,29 @@ namespace SinoTunnel
         double poreLatSpacing;
         double poreVerSpacing;
         int poreNum;
-        public void Process(out string str)
+
+        public string inforSTR;
+        public string[] calSTR = new string[8];
+        public string sgCheckSTR;
+        public string pushCheckSTR;
+        public string boltCheckSTR;
+                
+        public void Process()
         {
-            //BetaAutoCatch();
+            BetaAutoCatch();            
 
             oSTN_VerticalStress.VerticalStress("TUNNEL", out string lt, out string st, out string surch, out double lE1,
                 out double sE1, out double pt, out double lph1, out double lph2, out double sph1, out double sph2, out double uu);
-            
 
+            Pv = oSTN_VerticalStress.PvTop;
+            Ph1 = oSTN_VerticalStress.LongTermPh1;
+            Ph2 = oSTN_VerticalStress.LongTermPh2;
             Props();
-            delta = 0.007416;
-            Pv = 344.52;
-            Ph1 = 230.24;
-            Ph2 = 316.66;
-            Ph4 = 120.48;
+            //delta = 0.007416;
+            //Pv = 344.52;
+            //Ph1 = 230.24;
+            //Ph2 = 316.66;
+            //Ph4 = 120.48;
             Calculation();
 
             // beta 查表參數
@@ -106,24 +125,19 @@ namespace SinoTunnel
             SGPore();
 
             OutRound();
-            string propStr = ExportSGProps();
-            str = "";
-            str += propStr;
 
-            string tableStr = ExportSGCalculation();
-            str += tableStr;
+            inforSTR = ExportSGProps();
+            
+            calSTR = ExportSGCalculation();            
 
-            string checkSTR = ExportSGCheck();
-            str += checkSTR;
-
-            string pushSTR = ExportSGPush();
-            str += pushSTR;
-
-            string poreSTR = ExportPoreCheck();
-            str += poreSTR;
+            sgCheckSTR = ExportSGCheck();            
+            pushCheckSTR = ExportSGPush();            
+            boltCheckSTR = ExportPoreCheck();            
+            
         }
 
         #region Props
+        double outboad;
         public void Props()
         {
             Facebeff = 25 * sg.t1;
@@ -137,14 +151,28 @@ namespace SinoTunnel
                 sg.t2 * Math.Pow(sg.t - sg.t1, 3) / 12 * 2 + 
                 sg.t2 * (sg.t - sg.t1) * Math.Pow((Faceybar - (sg.t - sg.t1) / 2), 2) * 2; // cm⁴
 
-            Pv = oSTN_VerticalStress.PvTop; //kN/m²
-            Ph1 = oSTN_VerticalStress.LongTermPh1; //kN/m²
-            Ph2 = oSTN_VerticalStress.LongTermPh2; //kN/m²
+            //Pv = oSTN_VerticalStress.PvTop; //kN/m²
+            //Ph1 = oSTN_VerticalStress.LongTermPh1; //kN/m²
+            //Ph2 = oSTN_VerticalStress.LongTermPh2; //kN/m²
 
             Ks = oSTN_VerticalStress.longTermSoilE * (1 - oSTN_VerticalStress.Nu12)
                 / (sg.Rout * (1 + oSTN_VerticalStress.Nu12)) / (1 - 2 * oSTN_VerticalStress.Nu12); //kN/m³            
 
-            Pv5 = 12.85; //kN/m²
+            //Pv5 = 12.85; //kN/m²
+
+            double Rout = sg.Rout;
+            double width = sg.width / 100;
+            double t1 = sg.t1 / 100;
+            double t = sg.t / 100;
+            double t2 = sg.t2 / 100;
+            double t3 = sg.t3 / 100;
+            outboad = sg.Rout - sg.t1 / 100;
+            Pv5 = (Math.PI * (Rout * Rout - outboad * outboad) * (width)
+                + Math.PI * (outboad * outboad - (Rout - t) * (Rout - t)) * t2 * 2
+                + t3 * (t - t1) * (width - t2 * 2) * 360 / sg.theta)
+                * sg.UW * 1 / width 
+                / (2 * Rout);
+
             g = Pv5 / Math.PI;
             delta = (2 * Pv - Ph1 - Ph2 + Pv5) * Math.Pow(sg.Rout, 4)
                 / (24 * (eta * sg.E * Faceinertia * 1E-8 + 0.0454 * Ks * Math.Pow(sg.Rout, 4))); // m 
@@ -517,12 +545,19 @@ namespace SinoTunnel
             propStr += $" {emsp1()} 外緣面板厚度 t1 = {sg.t1} cm <br> ";
             propStr += $" {emsp1()} 主樑板厚度 t2 = {sg.t2} cm <br> ";
             propStr += $" {emsp1()} 肋板厚度 t3 = {sg.t3} cm <br> ";
-            propStr += $" {emsp1()} 環片厚度 t = {sg.t} m <br> ";
+            propStr += $" {emsp1()} 環片厚度 t = {sg.t} cm <br> ";
             propStr += $" {emsp1()} 縱肋版相隔角度 θ = {sg.theta}° <br> ";
-            //propStr += $" <br> {image("images\\鑄鐵環片切面.jpg")} <br> ";
-            //propStr += $" <br> {image("images\\鑄鐵環片剖面_03修正.jpg")} <br> ";
-            propStr += $" <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片切面.jpg")} <br> ";
-            propStr += $" <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片剖面_03修正.jpg")} <br> ";
+
+            if (situation)
+            {
+                propStr += $" <br> {image("images\\鑄鐵環片切面.jpg")} <br> ";
+                propStr += $" <br> {image("images\\鑄鐵環片剖面_03修正.jpg")} <br> ";
+            }
+            else
+            {
+                propStr += $" <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片切面.jpg")} <br> ";
+                propStr += $" <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片剖面_03修正.jpg")} <br> ";
+            }                        
 
             propStr += $" {emsp1()} (1)有效寬度 beff <br> ";
             propStr += $" {emsp2()} beff = 25 * t1 = 25 * {sg.t1} = {25 * sg.t1} cm <br> ";
@@ -543,7 +578,14 @@ namespace SinoTunnel
                 $" = {outFaceInertia} cm⁴ <br> ";
 
             propStr += $" {emsp1()} (3)環片自重(每1m) <br> ";
-            propStr += $" {emsp2()} Pv5 = ~ = {outPv5} kN/m² <br> ";
+
+            propStr += $" {emsp2()} Pv5 = [π*({sg.Rout}² - {outboad}²)*{sg.width/100} + " +
+                $"π*({outboad}² - {sg.Rout - sg.t / 100}²)*{sg.t2 / 100}*2 + " +
+                $"{sg.t3 / 100}*{(sg.t - sg.t1) / 100}*{sg.width / 100 - sg.t2 / 100 * 2}*{360 / sg.theta}]*" +
+                $"{sg.UW} * {1 / (sg.width / 100)} / " +
+                $"(2 * {sg.Rout}) = {outPv5} kN/m² <br> ";
+            //propStr += $" {emsp2()} Pv5 = ~ = {outPv5} kN/m² <br> ";
+
             propStr += $" {emsp2()} g = Pv5 / π = {outg} <br> ";
 
             propStr += $" {emsp1()} (4)側向反力 Ph4 <br> ";
@@ -558,8 +600,10 @@ namespace SinoTunnel
             return propStr;
         }
 
-        public string ExportSGCalculation()
+        public string[] ExportSGCalculation()
         {
+            string[] exportSTR = new string[8];
+
             string calStr = "";
 
             calStr += $"環片受力分析(慣用計算) <br> ";
@@ -573,7 +617,8 @@ namespace SinoTunnel
             calStr += $" {emsp1()} 環片自重 Pv5 = {outPv5} kN/m² <br> ";
             calStr += $" {emsp1()} 環片勁度折減係數 η = {eta} <br> ";
             calStr += $" {emsp1()} 彎矩修正因子 ξ = {xi} <br> <br> ";
-                       
+
+            exportSTR[0] = calStr;
 
             string PvStr = "";
             PvStr += $"1.由垂直線型荷重Pv產生之力量 <br> ";
@@ -584,6 +629,7 @@ namespace SinoTunnel
             string table = ForceTable(PvCal);            
             PvStr += table;
 
+            exportSTR[1] = PvStr;
             calStr += PvStr;
             calStr += "<br>";
 
@@ -595,6 +641,7 @@ namespace SinoTunnel
             table = ForceTable(Ph1Cal);
             Ph1Str += table;
 
+            exportSTR[2] = Ph1Str;
             calStr += Ph1Str;
             calStr += " <br> ";
 
@@ -606,6 +653,7 @@ namespace SinoTunnel
             table = ForceTable(Ph2_1Cal);
             Ph2_1Str += table;
 
+            exportSTR[3] = Ph2_1Str;
             calStr += Ph2_1Str;
             calStr += " <br> ";
 
@@ -623,6 +671,7 @@ namespace SinoTunnel
             table = ForceTable(kdeltaCal);
             Ph4Str += table;
 
+            exportSTR[4] = Ph4Str;
             calStr += Ph4Str;
             calStr += " <br> ";
 
@@ -640,6 +689,7 @@ namespace SinoTunnel
             table = ForceTable(Pv5Cal);
             Pv5Str += table;
 
+            exportSTR[5] = Pv5Str;
             calStr += Pv5Str;
             calStr += " <br> ";
 
@@ -648,23 +698,27 @@ namespace SinoTunnel
             table = ForceTable(totalCal);
             P6Str += table;
 
+            exportSTR[6] = Ph4Str;
             calStr += P6Str;
             calStr += " <br> ";
 
+            string resultStr = "";
+            resultStr += $" <br> M1 = {Math.Round(M1, 2)} kN-m <br> ";
+            resultStr += $" M2 = {Math.Round(M2, 2)} kN-m <br> ";
+            resultStr += $" Mmax = {Math.Round(Mmax, 2)} kN-m <br> ";
+            resultStr += $" M1c = (1 + ξ)M1 = {Math.Round(outM1c * p.newton, 2)} kN-m = {outM1c} t-m <br> ";
+            resultStr += $" M1j = (1 - ξ)M1 = {Math.Round(M1j * p.newton, 2)} kN-m = {Math.Round(M1j, 2)} t-m <br> ";
 
-            calStr += $" <br> M1 = {Math.Round(M1, 2)} kN-m <br> ";
-            calStr += $" M2 = {Math.Round(M2, 2)} kN-m <br> ";
-            calStr += $" Mmax = {Math.Round(Mmax, 2)} kN-m <br> ";
-            calStr += $" M1c = (1 + ξ)M1 = {Math.Round(outM1c * p.newton, 2)} kN-m = {outM1c} t-m <br> ";
-            calStr += $" M1j = (1 - ξ)M1 = {Math.Round(M1j * p.newton, 2)} kN-m = {Math.Round(M1j, 2)} t-m <br> ";
-                        
-            calStr += $" Q1 = {Math.Round(Q1, 2)} kN <br> ";
-            calStr += $" Q2 = {Math.Round(Q2, 2)} kN <br> ";
-            calStr += $" Qmax = {Math.Round(Qmax, 2)} kN <br> ";
-            calStr += $" M2c = (1 + ξ)M2 = {Math.Round(outM2c * p.newton, 2)} kN-m = {outM2c} t-m <br> ";
-            calStr += $" M2j = (1 + ξ)M2 = {Math.Round(M2j * p.newton, 2)} kN-m = {Math.Round(M2j, 2)} t-m <br> ";
+            resultStr += $" Q1 = {Math.Round(Q1, 2)} kN <br> ";
+            resultStr += $" Q2 = {Math.Round(Q2, 2)} kN <br> ";
+            resultStr += $" Qmax = {Math.Round(Qmax, 2)} kN <br> ";
+            resultStr += $" M2c = (1 + ξ)M2 = {Math.Round(outM2c * p.newton, 2)} kN-m = {outM2c} t-m <br> ";
+            resultStr += $" M2j = (1 + ξ)M2 = {Math.Round(M2j * p.newton, 2)} kN-m = {Math.Round(M2j, 2)} t-m <br> ";
 
-            return calStr;
+            exportSTR[7] = resultStr;
+            calStr += resultStr;
+
+            return exportSTR;
         }
 
         string ForceTable(List<Tuple<int, double ,double, double>> force)
@@ -726,8 +780,8 @@ namespace SinoTunnel
 
             checkSTR += $" {emsp1()} be = {Facebeff} cm <br> ";
             checkSTR += $" {emsp1()} A = {FaceAeff} cm² <br> ";
-            checkSTR += $" {emsp1()} y' = {Faceybar} cm <br> ";
-            checkSTR += $" {emsp1()} I = {Faceinertia} cm⁴ <br> ";
+            checkSTR += $" {emsp1()} y' = {outFaceyBar} cm <br> ";
+            checkSTR += $" {emsp1()} I = {outFaceInertia} cm⁴ <br> ";
 
             checkSTR += $" {emsp1()} 容許抗彎拉應力 = {sg.Fat} kg/cm² <br> ";
             checkSTR += $" {emsp1()} 容許抗彎壓應力 = {sg.Fac} kg/cm² <br> ";
@@ -785,9 +839,11 @@ namespace SinoTunnel
             checkSTR += $" {emsp2()} σ = My/I = {outElasStressY} {str} <br> ";
 
             // (3)Seely 法
-            checkSTR += $" {emsp1()} (3)Seely法 <br> "; 
-            //checkSTR += $" <br> {image(@"images\鑄鐵環片Seely法.PNG")} <br> ";
-            checkSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片Seely法.PNG")} <br> ";
+            checkSTR += $" {emsp1()} (3)Seely法 <br> ";
+
+            if (situation) { checkSTR += $" <br> {image(@"images\鑄鐵環片Seely法.PNG")} <br> "; }
+            else { checkSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片Seely法.PNG")} <br> "; }
+                                 
             checkSTR += $" {emsp1()} t = {sg.t1} cm <br> ";
             checkSTR += $" {emsp1()} lx = {lx} m 短邊 <br> ";
             checkSTR += $" {emsp1()} ly = {ly} m 長邊 <br> ";
@@ -851,9 +907,9 @@ namespace SinoTunnel
             //pushSTR += $" {emsp1()} 外緣面板厚度 t1 = {sg.t1} cm <br> ";
             //pushSTR += $" {emsp1()} 縱肋板厚度 t3 = {sg.t3} cm <br> ";
 
-            //pushSTR += $" <br> {image(@"images\鑄鐵環片肋版參數.jpg")} <br> ";
-            pushSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片肋版參數.jpg")} <br> ";
-
+            if (situation) { pushSTR += $" <br> {image(@"images\鑄鐵環片肋版參數.jpg")} <br> "; }
+            else { pushSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片肋版參數.jpg")} <br> "; }
+            
             pushSTR += $" {emsp1()} (1)有效寬度be <br> ";
             pushSTR += $" {emsp2()} be = 20 * t1 = {20 * sg.t} cm <br> ";            
             pushSTR += $" {emsp2()} b = θ/360 * π * D = {outRibB} <br> ";
@@ -885,8 +941,9 @@ namespace SinoTunnel
             pushSTR += $" {emsp1()} (4)安全係數 <br> ";
             pushSTR += $" {emsp2()} 根據 AISC 規範 <br> ";
 
-            //pushSTR += $" <br> {image(@"images\鑄鐵環片推力安全係數檢核.JPG")} <br> ";
-            pushSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片推力安全係數檢核.JPG")} <br> ";
+            if (situation) { pushSTR += $" <br> {image(@"images\鑄鐵環片推力安全係數檢核.JPG")} <br> "; }
+            else { pushSTR += $" <br> {emsp1()} {image(@"E:\2019研發案\Winform\images\鑄鐵環片推力安全係數檢核.JPG")} <br> "; }
+            
 
             pushSTR += $" 其中 fe' = 12*π*E/[23*(KL/r)²] = {outfe} kg/cm² <br> ";
             pushSTR += $" 令 Cm = {Cm} <br> ";
@@ -914,8 +971,10 @@ namespace SinoTunnel
             double y1 = 0.0625;
             double y2 = 0.075;
             int n = 4;
-            //poreSTR += $" <br> {image("images\\鑄鐵環片螺栓.jpg")} <br> ";
-            poreSTR += $" {emsp1()} <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片螺栓.jpg")} <br> ";
+
+            if (situation) { poreSTR += $" <br> {image("images\\鑄鐵環片螺栓.jpg")} <br> "; }
+            else { poreSTR += $" {emsp1()} <br> {image("E:\\2019研發案\\Winform\\images\\鑄鐵環片螺栓.jpg")} <br> "; }
+            
             poreSTR += $" {emsp1()} <table style='text-align:left' border='0'> <tr> ";
             poreSTR += $" <th> t </th> <th> = {sg.t}cm </th> <tr> ";
             poreSTR += $" <th> be </th> <th> = {Facebeff}cm </th> <tr> ";
