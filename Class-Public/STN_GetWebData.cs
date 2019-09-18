@@ -119,7 +119,22 @@ namespace SinoTunnel  // 讀取網路資料庫資料到變數
         //public double eqDensity = 0;
         public double DVariation = 0;
 
-
+        //STN-Section 鑄鐵環片參數
+        public double IronFy = 0;
+        public double IronEd = 0;
+        public double IronUW = 0;
+        public double IronDout = 0;
+        public double IronWidth = 0;
+        public double Iront = 0;
+        public double Iront1 = 0;
+        public double Iront2 = 0;
+        public double Iront3 = 0;
+        public double IronRibSpacing = 0;
+        public double IronStiffReduction = 0;
+        public double IronMCorrect = 0;
+        public double IronFat = 0;
+        public double IronFac = 0;
+        public double IronFas = 0;
 
         //*****************************************//
 
@@ -144,13 +159,9 @@ namespace SinoTunnel  // 讀取網路資料庫資料到變數
             DataTable dt = new DataTable();
             this.segment = oExcuteSQL.GetByUID("STN_Section", sectionUID);
 
-            try
-            {                
-                this.projectUID = segment.Rows[0]["Project"].ToString();
-            }
-            catch
-            {
-            }
+            try { this.projectUID = segment.Rows[0]["Project"].ToString(); }
+            catch { }
+            
 
             #region STN_Section 環片內徑、厚度
             try
@@ -188,7 +199,7 @@ namespace SinoTunnel  // 讀取網路資料庫資料到變數
             }
             #endregion
 
-            #region STN_Section 環片單位重、楊式模數、柏松比
+            #region STN_Section 環片單位重、楊式模數、柏松比            
             try
             {                
                 this.segmentUnitWeight = double.Parse(segment.Rows[0]["SGUnitWeight"].ToString());
@@ -197,9 +208,29 @@ namespace SinoTunnel  // 讀取網路資料庫資料到變數
                 this.segmentFc = double.Parse(segment.Rows[0]["SGfc"].ToString());
                 this.segmentFy = double.Parse(segment.Rows[0]["SGfy"].ToString());
             }
-            catch
+            catch { }
+            #endregion
+
+            #region STN_Section 鑄鐵環片資訊
+            try
             {
+                this.IronFy = double.Parse(segment.Rows[0]["SGfy"].ToString());
+                this.IronEd = double.Parse(segment.Rows[0]["IronEd"].ToString());
+                this.IronUW = double.Parse(segment.Rows[0]["SGUnitWeight"].ToString());
+                this.IronDout = double.Parse(segment.Rows[0]["IronSGDout"].ToString());
+                this.IronWidth = double.Parse(segment.Rows[0]["SGWidth"].ToString());
+                this.Iront = double.Parse(segment.Rows[0]["SGThickness"].ToString());
+                this.Iront1 = double.Parse(segment.Rows[0]["IronSGt1"].ToString());
+                this.Iront2 = double.Parse(segment.Rows[0]["IronSGt2"].ToString());
+                this.Iront3 = double.Parse(segment.Rows[0]["IronSGt3"].ToString());
+                this.IronRibSpacing = double.Parse(segment.Rows[0]["IronSGRibSpacing"].ToString());
+                this.IronStiffReduction = double.Parse(segment.Rows[0]["IronStiffReduction"].ToString());
+                this.IronMCorrect = double.Parse(segment.Rows[0]["IronMCorrect"].ToString());
+                this.IronFat = double.Parse(segment.Rows[0]["IronFat"].ToString());
+                this.IronFac = double.Parse(segment.Rows[0]["IronFac"].ToString());
+                this.IronFas = double.Parse(segment.Rows[0]["IronFas"].ToString());
             }
+            catch { }
             #endregion
 
             #region STN_Section, STN_Segment, STN_SegmentMaterial 選定之frame的性質與對應的材料性質
