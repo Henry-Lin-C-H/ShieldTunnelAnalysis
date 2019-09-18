@@ -693,13 +693,13 @@ namespace SinoTunnel
             calStr += Pv5Str;
             calStr += " <br> ";
 
-            string P6Str = "";
-            P6Str += $"6.環片襯砌所受之總力(Pv,Ph2,Ph2,Ph4,Ph5) <br> ";
+            string Ph6Str = "";
+            Ph6Str += $"6.環片襯砌所受之總力(Pv,Ph2,Ph2,Ph4,Ph5) <br> ";
             table = ForceTable(totalCal);
-            P6Str += table;
+            Ph6Str += table;
 
-            exportSTR[6] = Ph4Str;
-            calStr += P6Str;
+            exportSTR[6] = Ph6Str;
+            calStr += Ph6Str;
             calStr += " <br> ";
 
             string resultStr = "";
