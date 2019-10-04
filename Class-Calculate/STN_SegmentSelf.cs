@@ -164,7 +164,15 @@ namespace SinoTunnel
 
                         VmaxOut = string.Format("Vmax = (w * L/2) - ( w * L1) <br> &emsp; = {0} kN", TransportationShearForce);
 
-                        OutputTransportation = $"環片投影周長 L <br> &emsp; {LOut} <br> 單位長度環片自重 w <br> &emsp; {wOut} <br> &emsp; {L2Out} <br> &emsp; {L1Out} <br> 彎矩計算 <br> &emsp; {Mmax1Out} <br> &emsp; {Mmax2Out} <br> {MmaxOut} <br> {VmaxOut}";
+                        OutputTransportation = $"2.2 吊放環片過程彎矩計算 <br> ";
+                        OutputTransportation += $" <table style='text-align:left' border='0'> <tr> ";
+                        OutputTransportation += $" <th> 環片內半徑 R </th> <th> = {RadiusIn}m </th> <tr> ";
+                        OutputTransportation += $" <th> 環片厚度 TH </th> <th> = {Thickness}m </th> <tr> ";
+                        OutputTransportation += $" <th> 環片角度 </th> <th> = {Angle}° </th> <tr> ";
+                        OutputTransportation += $" <th> 相鄰螺栓孔角度 </th> <th> = {AdjacentPoreAngle}° </th> <tr> ";
+                        OutputTransportation += $" <th> 環片單位重 γ </th> <th> = {UnitWeight}kN/m³ </th> <tr> ";
+                        OutputTransportation += $" </table> ";
+                        OutputTransportation += $" 環片投影周長 L <br> &emsp; {LOut} <br> 單位長度環片自重 w <br> &emsp; {wOut} <br> &emsp; {L2Out} <br> &emsp; {L1Out} <br> 彎矩計算 <br> &emsp; {Mmax1Out} <br> &emsp; {Mmax2Out} <br> {MmaxOut} <br> {VmaxOut}";
                     }
                     break;
                     /*
