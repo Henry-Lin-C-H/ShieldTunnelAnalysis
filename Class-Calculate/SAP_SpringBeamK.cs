@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SinoTunnel.Class_Calculate
+namespace SinoTunnel
 {
     class SAP_SpringBeamK
     {
@@ -102,7 +102,7 @@ namespace SinoTunnel.Class_Calculate
         public List<double> SGhalfDistinct = new List<double>();
         public List<double> SoilHalfAngle = new List<double>();
         public List<double> SoilHalfDistinct = new List<double>();
-
+                
         void VerticalStress()
         {
             verticalStress.VerticalStress("TUNNEL", out string ls, out string ss, out string sus, out double longTermE1,
@@ -306,7 +306,237 @@ namespace SinoTunnel.Class_Calculate
         }
         #endregion
 
+        #region FrameSectionAssigns
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="SGAnum"></param>
+        /// <param name="sectionAssign">[0]:正常環片, [1]:計算1~3次，採用單一接觸深度環片, [1~N]:各接縫採用不同接觸深度</param>
+        public void FrameSectionAssigns(int SGAnum, List<string> sectionAssign, int realTimes, out List<double> D)
+        {
+            List<bool> R1FrameBool = new List<bool>(); //判斷是否為環片接縫處的frame
+            List<bool> R2FrameBool = new List<bool>(); //判斷是否為環片接縫處的frame
+
+            List<double> R1DepthAngle = new List<double>(); //各環接觸深度的角度，搭配XYZRing1的角度，每個節點會有兩個frame採用不同接觸深度
+            List<double> R2DepthAngle = new List<double>();
+            for (int i = 0; i < R1SGAngle.Count; i++)
+            {
+                R1DepthAngle.Add(R1SGAngle[i] - 4);
+                R1DepthAngle.Add(R1SGAngle[i]);
+
+                R2DepthAngle.Add(R2SGAngle[i] - 4);
+                R2DepthAngle.Add(R2SGAngle[i]);
+            }
+
+            List<string> SGName = new List<string>(); // [0]:正常環片, [1]:計算1~3次，採用單一接觸深度環片, [1~N]:各接縫採用不同接觸深度
+            foreach (string str in sectionAssign)
+                SGName.Add(str);
+
+            //switch (realTimes)
+            //{
+            //    case 4:
+            //        {
+            //            DataTable td;
+            //            for (int i = 0; i < sectionAssign.Count; i++)
+            //            {
+            //                td = dataSearch.GetByUID("STN_Segment", sectionAssign[i]);
+            //                SGName.Add(td.Rows[0]["Name"].ToString());
+            //            }
+            //        }
+            //        break;
+            //    default:
+            //        {
+            //            foreach (string str in sectionAssign)
+            //                SGName.Add(str);
+            //        }
+            //        break;
+            //}
+
+            //DataTable td;
+            //for (int i = 0; i < SGUID.Count; i++)
+            //{
+            //    td = dataSearch.GetByUID("STN_Segment", SGUID[i]);
+            //    SGName.Add(td.Rows[0]["Name"].ToString());
+            //}
+
+
+            bool tempBool1;
+            bool tempBool2;
+            for (int i = 0; i < SGNum1Ring; i++)
+            {
+                tempBool1 = false;
+                tempBool2 = false;
+                for (int j = 0; j < R1DepthAngle.Count; j++)
+                {
+                    if (XYZSGRing1[i].Item1 == R1DepthAngle[j]) tempBool1 = true;
+                    if (XYZSGRing2[i].Item1 == R2DepthAngle[j]) tempBool2 = true;
+                }
+                R1FrameBool.Add(tempBool1);
+                R2FrameBool.Add(tempBool2);
+            }
+
+            List<string> frameAssigns = new List<string>();
+            List<string> R2FrameAssign = new List<string>();
+            int R2sg = 1;
+            int sg = 1;
+            bool tempBool = true;
+            bool R2tempBool = true;
+            for (int i = 0; i < SGNum1Ring; i++)
+            {
+                if (R1FrameBool[i]) //判斷是否為採用接觸深度之環片
+                {
+                    switch (SGName.Count)
+                    {
+                        case 2: //1~3次計算
+                            {
+                                frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[1]},{SGName[1]},Default");
+                            }
+                            break;
+                        default: //最終計算，一次把segment放入兩個相鄰的frame，所以bool作用為跳過一次
+                            {
+                                if (tempBool)
+                                {
+                                    frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[sg]},{SGName[sg]},Default");
+                                    frameAssigns.Add($"{frameNameRing1[i + 1]},Rectangular,N.A.,{SGName[sg]},{SGName[sg]},Default");
+                                    sg++;
+                                }
+                                tempBool = !tempBool;
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[0]},{SGName[0]},Default");
+                }
+
+                if (R2FrameBool[i])
+                {
+                    switch (SGName.Count)
+                    {
+                        case 2:
+                            R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[1]},{SGName[1]},Default");
+                            break;
+                        default:
+                            {
+                                if (R2tempBool)
+                                {
+                                    R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[R2sg]},{SGName[R2sg]},Default");
+                                    R2FrameAssign.Add($"{frameNameRing2[i + 1]},Rectangular,N.A.,{SGName[R2sg]},{SGName[R2sg]},Default");
+                                    R2sg++;
+                                }
+                                R2tempBool = !R2tempBool;
+                            }
+                            break;
+                    }
+                }
+                else
+                    R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[0]},{SGName[0]},Default");
+            }
+            //input.PutDataToSheet("Frame Section Assignments", frameAssigns);
+            //input.PutDataToSheet("Frame Section Assignments", R2FrameAssign);
+
+            //計算兩環間的斷面轉換資訊(直徑)            
+            HalfAngleCal("SEGMENT");
+
+
+
+            double G = (SGE / (2 * (1 + SGU12)));
+
+            double Ksb = G * Math.PI / 4 * (Math.Pow(SGradiusOut * 2, 2) - Math.Pow((SGradiusOut - SGthick) * 2, 2)) / (SGwidth / 2);
+            List<double> KsbDis = new List<double>();
+            foreach (double s in SGhalfDistinct)
+                KsbDis.Add(Ksb * s / 360);
+
+            double Etemp = 1E10; //計算直徑(兩環的)   
+            double L = 2;
+            D = new List<double>();
+            double inertia;
+            foreach (double s in KsbDis)
+            {
+                inertia = s * L * L * L / (12 * Etemp);
+                D.Add(Math.Round(Math.Pow(64 * inertia / Math.PI, 0.25), 4));
+            }
+
+            //抓到interRing的UID
+            //DataTable material = dataSearch.GetByKeyword("STN_SegmentMaterial", "Project", p.projectUID);
+            //string interRingUID = "";
+            //for (int i = 0; i < material.Rows.Count; i++)
+            //{
+            //    if (material.Rows[i]["MaterialName"].ToString() == "Inter-Ring Shear")
+            //        interRingUID = material.Rows[i]["UID"].ToString();
+            //}
+
+            //將未輸入兩環桿件資訊的data輸入至SQL資料庫中
+            //List<string> inputUID = new List<string>();
+            //[Name, Material, Shape, Width, Height]
+            //List<Tuple<string, string, string, double, double>> frameData = new List<Tuple<string, string, string, double, double>>();
+
+
+            List<string> InterRingName = new List<string>(); //針對兩環間桿件命名
+            foreach (double s in SGhalfDistinct)
+                InterRingName.Add($"InterRingAngle = {s}");
+
+            //DataTable segmentFrame = dataSearch.GetBySection("STN_Segment", sectionUID, "");
+            //for (int i = 0; i < SGhalfDistinct.Count; i++)
+            //{
+            //    bool test = true;
+            //    for (int j = 0; j < segmentFrame.Rows.Count; j++)
+            //    {
+            //        if (InterRingName[i] == segmentFrame.Rows[j]["Name"].ToString())
+            //            test = false;
+            //    }
+            //    if (test)
+            //    {
+            //        inputUID.Add(Guid.NewGuid().ToString("D"));
+            //        var data = Tuple.Create(InterRingName[i], interRingUID, "Circle", 1.0, D[i]);
+            //        frameData.Add(data);
+            //    }
+            //}
+            //dataSearch.InsertFrameData(inputUID, sectionUID, frameData);
+
+            List<string> frameSectionBetweenTwoRing = new List<string>();
+            for (int i = 0; i < SGNum1Ring; i++)
+            {
+                for (int j = 0; j < SGhalfDistinct.Count; j++)
+                {
+                    if (SGhalfAngle[i] == SGhalfDistinct[j])
+                        frameSectionBetweenTwoRing.Add($"{frameNameR1R2[i]},Circle,N.A.,{InterRingName[j]},{InterRingName[j]},Default");
+                }
+            }
+            //input.PutDataToSheet("Frame Section Assignments", frameSectionBetweenTwoRing);
+
+        }
+        #endregion
+
+        #region SGConnectivityLink
+        public void SGConnectivityLink()
+        {
+            List<string> LinkSTR = new List<string>();
+            for (int i = 0; i < SoilNum1Ring; i++)
+            {
+                string[] s = jointNameSoil1[i].Split('_');
+                linkNameSoil1.Add($"R1_Link_{s[2]}");
+                linkNameSoil2.Add($"R2_Link_{s[2]}");
+            }
+            LinkToString(ref LinkSTR, linkNameSoil1, jointNameRing1, jointNameSoil1);
+            LinkToString(ref LinkSTR, linkNameSoil2, jointNameRing2, jointNameSoil2);
+
+            //input.PutDataToSheet("Connectivity - Link", LinkSTR);
+
+            void LinkToString(ref List<string> link, List<string> linkName, List<string> jointNameRing, List<string> jointNameSoil)
+            {
+                int spacing = (jointNameRing.Count - jointNameSoil.Count - 1) / 2 + 1;
+                for (int i = 0; i < linkName.Count; i++)
+                {
+                    link.Add($"{linkName[i]},{jointNameRing[i + spacing]},{jointNameSoil[i]}");
+                }
+            }
+        }
+        #endregion
+
         #region Link Prop Gap Assign
+        double soilKs;
         public void LinkPropAndGapAndAssign(string condition)
         {
             HalfAngleCal("SOIL");
@@ -316,11 +546,11 @@ namespace SinoTunnel.Class_Calculate
                 linkNameForExcel.Add($"Soil Spring Angle = {SoilHalfDistinct[i]}");
 
             //計算土壤彈簧的K
-            double Em = 0;
+            double Em = 0;            
             if (condition == "LongTerm" || condition == "VariationofDiameter" || condition == "EQofDiameter") Em = verticalStress.longTermSoilE;
             else if (condition == "ShortTerm") Em = verticalStress.shortTermSoilE;
             double soilNu = verticalStress.Nu12;
-            double soilKs = Em * (1 - soilNu) / (SGradiusInter * (1 + soilNu) * (1 - 2 * soilNu));
+            soilKs = Em * (1 - soilNu) / (SGradiusInter * (1 + soilNu) * (1 - 2 * soilNu));
 
             List<double> soilDisKs = new List<double>();
             foreach (double s in SoilHalfDistinct)
@@ -369,8 +599,21 @@ namespace SinoTunnel.Class_Calculate
                     {
                         if (SoilHalfAngle[i] == SoilHalfDistinct[j])
                         {
-                            if (k == 0) linkAssign.Add($"{linkNameSoil1[i]},Gap,TwoJoint,{linkNameForExcel[j]},None"); //第一環
-                            else if (k == 1) linkAssign.Add($"{linkNameSoil2[i]},Gap,TwoJoint,{linkNameForExcel[j]},None"); //第二環
+                            if (k == 0)
+                            {
+                                linkAssign.Add($"{linkNameSoil1[i]},Gap,TwoJoint,{linkNameForExcel[j]},None"); //第一環
+
+                                var data = Tuple.Create(linkNameSoil1[i], SoilHalfAngle[i], Math.Round(soilDisKs[j], 3));
+                                springK.Add(data);
+                            }
+                            else if (k == 1)
+                            {
+                                linkAssign.Add($"{linkNameSoil2[i]},Gap,TwoJoint,{linkNameForExcel[j]},None"); //第二環
+
+                                var data = Tuple.Create(linkNameSoil2[i], SoilHalfAngle[i], Math.Round(soilDisKs[j], 3));
+                                springK.Add(data);
+                            }
+                                
                         }
                     }
                 }
@@ -424,5 +667,55 @@ namespace SinoTunnel.Class_Calculate
             }
         }
         #endregion
+
+        public List<Tuple<string, double, double>> springK = new List<Tuple<string, double, double>>();
+        public void process(out string str)
+        {
+            VerticalStress();
+            SGJointsAndRestraint(3, out List<string> diameterJOintName);
+            SGConnectivityLink();
+            LinkPropAndGapAndAssign("LongTerm");
+
+            double Em = Math.Round(verticalStress.longTermSoilE, 0);
+
+            str = "C.土壤彈簧 <br> ";
+            str += $"分析時隧道周圍之被動地層反力，以土壤彈簧來模擬，除隧道冠頂90°範圍外，其餘均勻分布於隧道四周，如下圖所示 <br> ";
+            str += $"{image("混凝土環片分析土壤彈簧冠頂90度範圍.PNG")} <br> ";
+            str += $"由Duddeck and ErdMann(1982)知土層的地基反力係數Ks可由其楊氏係數Em、柏松比、及襯砌環片半徑R來表示，其關係式如下 <br> ";
+            str += $"Ks = [Em(1 - ν)]/[(R(1 + ν)(1 - 2ν)] = [{Em}*(1 - {SGU12})]/" +
+                $"[({SGradiusIn}*(1 + {SGU12}) * (1 - 2{SGU12})] = {soilKs}kN/m³ <br> ";
+            str += $"Reference:Duddeck and Erdmann(1982) 'Structural Design Models for Tunnel' Tunneling 82, The Institution" +
+                $" of Mining and Metallurgy, pp83-91 <br> ";
+            str += $"模擬被動土層反力彈簧之計算，如下圖所示 <br> ";
+
+            double tempK009 = Math.Round(soilKs * 0.5 * (54 - 36) / 2 * Math.PI / 180 * SGradiusInter,3);
+            str += $"以桿件R1_Link_Soil009為例，其彈簧係數可由地盤反力係數Ks除以彈簧所在範圍求得" +
+                $"R1_Link_Soil009 = {Math.Round(soilKs,2)} * 0.5 * (54°-36°)/2 * (π/180) * {SGradiusInter} = {tempK009} kN/m <br> ";
+
+
+            str += $"<table style='text-align:center' border='5' width='300'> <tr>";
+            str += $" <th> 桿件編號 </th> <th> △θ </th> <th> Ksi </th> <tr> ";                        
+            for(int i = 0; i < springK.Count; i++)
+            {
+                str += $" <th> {springK[i].Item1} </th> <th> {springK[i].Item2} </th> <th> {springK[i].Item3.ToString("f3")} </th> <tr> ";
+            }
+            str += $" </table>";
+        }
+
+        public List<Tuple<string, double, double, double>> segmentDia = new List<Tuple<string, double, double, double>>();
+        public void SegmentD()
+        {
+
+        }
+
+
+        string emsp4() { return "&emsp; &emsp; &emsp; &emsp;"; }
+        string emsp3() { return "&emsp; &emsp; &emsp;"; }
+        string emsp2() { return "&emsp; &emsp;"; }
+        string emsp1() { return "&emsp;"; }
+
+        public string image(string str) { return $"<img src='{str}'></img> "; }
     }
+
+    
 }
