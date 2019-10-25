@@ -306,7 +306,102 @@ namespace SinoTunnel
         }
         #endregion
 
+        #region ConnectivityFrame_FrameOutputStationAssigns
+        public void SGConnectivityFrame_StationAssigns(out List<string> contactingFrameName)
+        {
+            contactingFrameName = new List<string>();
+            List<string> ConnectivityFrame = new List<string>();
+            for (int i = 0; i < SGNum1Ring; i++) //設定第一環、第二環與兩環間的frame name
+            {
+                if (XYZSGRing1[i].Item1 < Ring1.BK_Angle)
+                    frameNameRing1.Add($"R1SG{(i + 1).ToString("D3")}_B");
+                else if (XYZSGRing1[i].Item1 < Ring1.KB_Angle)
+                    frameNameRing1.Add($"R1SG{(i + 1).ToString("D3")}_K");
+                else if (XYZSGRing1[i].Item1 < Ring1.BA_Angle)
+                    frameNameRing1.Add($"R1SG{(i + 1).ToString("D3")}_B");
+                else if (XYZSGRing1[i].Item1 < Ring1.AB_Angle)
+                    frameNameRing1.Add($"R1SG{(i + 1).ToString("D3")}_A");
+                else
+                    frameNameRing1.Add($"R1SG{(i + 1).ToString("D3")}_B");
+
+                if (XYZSGRing2[i].Item1 < Ring2.BA_Angle)
+                    frameNameRing2.Add($"R2SG{(i + 1).ToString("D3")}_B");
+                else if (XYZSGRing2[i].Item1 < Ring2.AB_Angle)
+                    frameNameRing2.Add($"R2SG{(i + 1).ToString("D3")}_A");
+                else if (XYZSGRing2[i].Item1 < Ring2.BK_Angle)
+                    frameNameRing2.Add($"R2SG{(i + 1).ToString("D3")}_B");
+                else if (XYZSGRing2[i].Item1 < Ring2.KB_Angle)
+                    frameNameRing2.Add($"R2SG{(i + 1).ToString("D3")}_K");
+                else
+                    frameNameRing2.Add($"R2SG{(i + 1).ToString("D3")}_B");
+
+                frameNameR1R2.Add($"R1R2_SG{(i + 1).ToString("D3")}");
+            }
+            FrameToString(ref ConnectivityFrame, frameNameRing1, jointNameRing1);
+            FrameToString(ref ConnectivityFrame, frameNameRing2, jointNameRing2);
+
+            for (int i = 0; i < SGNum1Ring; i++) //第一環的接觸深度frame，選擇後frame(頭joint)
+            {
+                ConnectivityFrame.Add($"{frameNameR1R2[i]},{jointNameRing1[i]},{jointNameRing2[i]},No");
+
+                for (int j = 0; j < R1SGAngle.Count; j++)
+                {
+                    if (XYZSGRing1[i].Item1 == R1SGAngle[j])
+                    {
+                        contactingFrameName.Add($"{frameNameRing1[i]}");
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < SGNum1Ring; i++) //第二環的接觸深度frame，選擇前frame(尾joint)
+            {
+                for (int j = 0; j < R2SGAngle.Count; j++)
+                {
+                    if (XYZSGRing2[i].Item1 == R2SGAngle[j])
+                    {
+                        contactingFrameName.Add($"{frameNameRing2[i - 1]}");
+                        break;
+                    }
+                }
+            }
+
+            //contactingFrameName = contactingFrameName.OrderBy(p => p).ToList(); 沒辦法使用，因為有A K B 環的名稱影響
+
+
+            //List<string> FrameOutputStationAssigns = new List<string>();
+            //for (int i = 0; i < SGNum1Ring; i++)
+            //{
+            //    FrameOutputStationAssigns.Add($"{frameNameRing1[i]},MinNumSta,{2},,Yes,Yes");
+            //    FrameOutputStationAssigns.Add($"{frameNameRing2[i]},MinNumSta,{2},,Yes,Yes");
+            //    FrameOutputStationAssigns.Add($"{frameNameR1R2[i]},MinNumSta,{2},,Yes,Yes");
+            //}
+
+            //input.PutDataToSheet("Connectivity - Frame", ConnectivityFrame);
+            //input.PutDataToSheet("Frame Output Station Assigns", FrameOutputStationAssigns);
+
+            //FrameReleases 前環的軸力放掉、後環的扭矩放掉
+            //List<Tuple<string, string, string, string, string, string>> formerSide = new List<Tuple<string, string, string, string, string, string>>();
+            //List<Tuple<string, string, string, string, string, string>> latterSide = new List<Tuple<string, string, string, string, string, string>>();
+            //for (int i = 0; i < frameNameR1R2.Count; i++)
+            //{
+            //    formerSide.Add(Tuple.Create("Yes", "No", "No", "No", "No", "No"));
+            //    latterSide.Add(Tuple.Create("No", "No", "No", "Yes", "No", "No"));
+            //}
+            //input.FrameRelease(frameNameR1R2, formerSide, latterSide);  //"Frame Releases 1 - General"
+
+            void FrameToString(ref List<string> frame, List<string> frameName, List<string> jointName)
+            {
+                for (int i = 0; i < jointName.Count - 1; i++)
+                    frame.Add($"{frameName[i]},{jointName[i]},{jointName[i + 1]},No");
+                frame.Add($"{frameName[jointName.Count - 1]},{jointName[jointName.Count - 1]},{jointName[0]},No");
+            }
+        }
+
+        #endregion
+
         #region FrameSectionAssigns
+        double G;
         /// <summary>
         /// 
         /// </summary>
@@ -375,64 +470,64 @@ namespace SinoTunnel
                 R2FrameBool.Add(tempBool2);
             }
 
-            List<string> frameAssigns = new List<string>();
-            List<string> R2FrameAssign = new List<string>();
-            int R2sg = 1;
-            int sg = 1;
-            bool tempBool = true;
-            bool R2tempBool = true;
-            for (int i = 0; i < SGNum1Ring; i++)
-            {
-                if (R1FrameBool[i]) //判斷是否為採用接觸深度之環片
-                {
-                    switch (SGName.Count)
-                    {
-                        case 2: //1~3次計算
-                            {
-                                frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[1]},{SGName[1]},Default");
-                            }
-                            break;
-                        default: //最終計算，一次把segment放入兩個相鄰的frame，所以bool作用為跳過一次
-                            {
-                                if (tempBool)
-                                {
-                                    frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[sg]},{SGName[sg]},Default");
-                                    frameAssigns.Add($"{frameNameRing1[i + 1]},Rectangular,N.A.,{SGName[sg]},{SGName[sg]},Default");
-                                    sg++;
-                                }
-                                tempBool = !tempBool;
-                            }
-                            break;
-                    }
-                }
-                else
-                {
-                    frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[0]},{SGName[0]},Default");
-                }
+            //List<string> frameAssigns = new List<string>();
+            //List<string> R2FrameAssign = new List<string>();
+            //int R2sg = 1;
+            //int sg = 1;
+            //bool tempBool = true;
+            //bool R2tempBool = true;
+            //for (int i = 0; i < SGNum1Ring; i++)
+            //{
+            //    if (R1FrameBool[i]) //判斷是否為採用接觸深度之環片
+            //    {
+            //        switch (SGName.Count)
+            //        {
+            //            case 2: //1~3次計算
+            //                {
+            //                    frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[1]},{SGName[1]},Default");
+            //                }
+            //                break;
+            //            default: //最終計算，一次把segment放入兩個相鄰的frame，所以bool作用為跳過一次
+            //                {
+            //                    if (tempBool)
+            //                    {
+            //                        frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[sg]},{SGName[sg]},Default");
+            //                        frameAssigns.Add($"{frameNameRing1[i + 1]},Rectangular,N.A.,{SGName[sg]},{SGName[sg]},Default");
+            //                        sg++;
+            //                    }
+            //                    tempBool = !tempBool;
+            //                }
+            //                break;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        frameAssigns.Add($"{frameNameRing1[i]},Rectangular,N.A.,{SGName[0]},{SGName[0]},Default");
+            //    }
 
-                if (R2FrameBool[i])
-                {
-                    switch (SGName.Count)
-                    {
-                        case 2:
-                            R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[1]},{SGName[1]},Default");
-                            break;
-                        default:
-                            {
-                                if (R2tempBool)
-                                {
-                                    R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[R2sg]},{SGName[R2sg]},Default");
-                                    R2FrameAssign.Add($"{frameNameRing2[i + 1]},Rectangular,N.A.,{SGName[R2sg]},{SGName[R2sg]},Default");
-                                    R2sg++;
-                                }
-                                R2tempBool = !R2tempBool;
-                            }
-                            break;
-                    }
-                }
-                else
-                    R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[0]},{SGName[0]},Default");
-            }
+            //    if (R2FrameBool[i])
+            //    {
+            //        switch (SGName.Count)
+            //        {
+            //            case 2:
+            //                R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[1]},{SGName[1]},Default");
+            //                break;
+            //            default:
+            //                {
+            //                    if (R2tempBool)
+            //                    {
+            //                        R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[R2sg]},{SGName[R2sg]},Default");
+            //                        R2FrameAssign.Add($"{frameNameRing2[i + 1]},Rectangular,N.A.,{SGName[R2sg]},{SGName[R2sg]},Default");
+            //                        R2sg++;
+            //                    }
+            //                    R2tempBool = !R2tempBool;
+            //                }
+            //                break;
+            //        }
+            //    }
+            //    else
+            //        R2FrameAssign.Add($"{frameNameRing2[i]},Rectangular,N.A.,{SGName[0]},{SGName[0]},Default");
+            //}
             //input.PutDataToSheet("Frame Section Assignments", frameAssigns);
             //input.PutDataToSheet("Frame Section Assignments", R2FrameAssign);
 
@@ -441,7 +536,7 @@ namespace SinoTunnel
 
 
 
-            double G = (SGE / (2 * (1 + SGU12)));
+            G = (SGE / (2 * (1 + SGU12)));
 
             double Ksb = G * Math.PI / 4 * (Math.Pow(SGradiusOut * 2, 2) - Math.Pow((SGradiusOut - SGthick) * 2, 2)) / (SGwidth / 2);
             List<double> KsbDis = new List<double>();
@@ -505,6 +600,15 @@ namespace SinoTunnel
                 }
             }
             //input.PutDataToSheet("Frame Section Assignments", frameSectionBetweenTwoRing);
+
+            for(int i = 0; i < frameSectionBetweenTwoRing.Count; i++)
+            {
+                double tempK = Ksb * SGhalfAngle[i] / 360;
+                inertia = tempK * L * L * L / (12 * Etemp);
+                double tempD = Math.Round(Math.Pow(64 * inertia / Math.PI, 0.25), 4);
+                var data = Tuple.Create(frameNameR1R2[i], SGhalfAngle[i], Math.Round(tempK,0), tempD);
+                segmentDia.Add(data);
+            }
 
         }
         #endregion
@@ -671,8 +775,11 @@ namespace SinoTunnel
         public List<Tuple<string, double, double>> springK = new List<Tuple<string, double, double>>();
         public void process(out string str)
         {
+            List<string> nothing = new List<string>();
             VerticalStress();
             SGJointsAndRestraint(3, out List<string> diameterJOintName);
+            SGConnectivityFrame_StationAssigns(out List<string> contactingFrameName);
+            FrameSectionAssigns(3, nothing, 1, out List<double> D);
             SGConnectivityLink();
             LinkPropAndGapAndAssign("LongTerm");
 
@@ -700,12 +807,37 @@ namespace SinoTunnel
                 str += $" <th> {springK[i].Item1} </th> <th> {springK[i].Item2} </th> <th> {springK[i].Item3.ToString("f3")} </th> <tr> ";
             }
             str += $" </table>";
+
+            SegmentD(out string strDia);
+            str = strDia;
         }
 
         public List<Tuple<string, double, double, double>> segmentDia = new List<Tuple<string, double, double, double>>();
-        public void SegmentD()
+        public void SegmentD(out string strSGDia)
         {
+            strSGDia = "";
 
+            strSGDia += $"D. 決定環向連結桿之剪力勁度ksb <br> ";
+
+            strSGDia += $" 如圖 <br> ";
+
+            strSGDia += $"{emsp1()} 當襯砌環片受外力作用時，在環間剪力超過摩擦力之前，兩環間相對的移動將被限制，" +
+                $"而僅有環片混凝土本身的剪力變形， 因此其作用力-位移曲線為一初始的斜線及一水平線所組成(如圖所示)，" +
+                $"由於整個混凝土環片都會發生剪力變形，因此分析模式中垂直環片的構件皆具有剪力勁度 ，藉以模擬混凝土環片變形。 <br>";
+
+            strSGDia += $"{emsp1()} E1 = {SGE} kN/m² <br> ";
+            strSGDia += $"{emsp1()} G = E/2(1 + ν) = {SGE}/2(1 + {SGU12} = {G} kN/m² <br> ";
+            strSGDia += $"{emsp1()} τ = T/A = G*γ";
+
+            strSGDia = $"<table style='text-align:center' border='5' width='300'> <tr> ";
+            strSGDia += $"<th> 桿件編號 </th> <th> △θ </th> <th> Ki </th> <th> Di </th> <tr> ";
+
+            for(int i = 0; i < segmentDia.Count; i++)
+            {
+                strSGDia += $" <th> {segmentDia[i].Item1} </th> <th> {segmentDia[i].Item2} </th> " +
+                    $"<th> {segmentDia[i].Item3} </th> <th> {segmentDia[i].Item4} </th> <tr> ";
+            }
+            strSGDia += $"</table> ";
         }
 
 
