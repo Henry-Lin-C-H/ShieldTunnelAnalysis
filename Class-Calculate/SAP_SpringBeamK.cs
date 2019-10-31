@@ -402,6 +402,8 @@ namespace SinoTunnel
 
         #region FrameSectionAssigns
         double G;
+        double Ksb;
+        List<double> twoRingInertia = new List<double>();
         /// <summary>
         /// 
         /// </summary>
@@ -538,7 +540,7 @@ namespace SinoTunnel
 
             G = (SGE / (2 * (1 + SGU12)));
 
-            double Ksb = G * Math.PI / 4 * (Math.Pow(SGradiusOut * 2, 2) - Math.Pow((SGradiusOut - SGthick) * 2, 2)) / (SGwidth / 2);
+            Ksb = G * Math.PI / 4 * (Math.Pow(SGradiusOut * 2, 2) - Math.Pow((SGradiusOut - SGthick) * 2, 2)) / (SGwidth / 2);
             List<double> KsbDis = new List<double>();
             foreach (double s in SGhalfDistinct)
                 KsbDis.Add(Ksb * s / 360);
@@ -546,11 +548,15 @@ namespace SinoTunnel
             double Etemp = 1E10; //計算直徑(兩環的)   
             double L = 2;
             D = new List<double>();
-            double inertia;
+            //double inertia;
+            int n = 0;
             foreach (double s in KsbDis)
             {
-                inertia = s * L * L * L / (12 * Etemp);
-                D.Add(Math.Round(Math.Pow(64 * inertia / Math.PI, 0.25), 4));
+                twoRingInertia.Add(s * L * L * L / (12 * Etemp));
+                //twoRingInertia[n] = s * L * L * L / (12 * Etemp);
+                D.Add(Math.Round(Math.Pow(64 * twoRingInertia[n] / Math.PI, 0.25), 4));
+                twoRingInertia[n] = Math.Round(twoRingInertia[n], 7);
+                n++;
             }
 
             //抓到interRing的UID
@@ -604,7 +610,7 @@ namespace SinoTunnel
             for(int i = 0; i < frameSectionBetweenTwoRing.Count; i++)
             {
                 double tempK = Ksb * SGhalfAngle[i] / 360;
-                inertia = tempK * L * L * L / (12 * Etemp);
+                double inertia = tempK * L * L * L / (12 * Etemp);
                 double tempD = Math.Round(Math.Pow(64 * inertia / Math.PI, 0.25), 4);
                 var data = Tuple.Create(frameNameR1R2[i], SGhalfAngle[i], Math.Round(tempK,0), tempD);
                 segmentDia.Add(data);
@@ -826,10 +832,51 @@ namespace SinoTunnel
                 $"由於整個混凝土環片都會發生剪力變形，因此分析模式中垂直環片的構件皆具有剪力勁度 ，藉以模擬混凝土環片變形。 <br>";
 
             strSGDia += $"{emsp1()} E1 = {SGE} kN/m² <br> ";
-            strSGDia += $"{emsp1()} G = E/2(1 + ν) = {SGE}/2(1 + {SGU12} = {G} kN/m² <br> ";
-            strSGDia += $"{emsp1()} τ = T/A = G*γ";
+            strSGDia += $"{emsp1()} G = E/2(1 + ν) = {SGE}/2(1 + {SGU12} = {Math.Round(G,0)} kN/m² <br> ";
+            strSGDia += $"{emsp1()} τ = T/A = G*γ -> 𝛿 = L*γ <br> ";
+            strSGDia += $"{emsp1()} 混凝土整體勁度Ksb可計算如下 <br> ";
+            strSGDia += $"{emsp2()} Ksb = T/𝛿 = τ*A/(L*γ) = G*A/L = {Math.Round(G,0)}*π/4*({SGradiusOut}² - {SGradiusIn}²)" +
+                $"/{SGwidth/2} = {Math.Round(Ksb,0)} kN/m <br> <br> ";
 
-            strSGDia = $"<table style='text-align:center' border='5' width='300'> <tr> ";
+            strSGDia += $" 將整體勁度分配至各節點桿件所在的區域 <br> ";
+            strSGDia += $" {emsp1()} 節點{jointNameRing1[0]} 桿件{segmentDia[0].Item1} <br> ";
+            strSGDia += $" {emsp2()} Ksb(1) = {Math.Round(Ksb, 0)}*{segmentDia[0].Item2}/2/360 = {segmentDia[0].Item3} kN/m <br> ";
+            strSGDia += $" {emsp1()} 節點{jointNameRing1[1]} 桿件{segmentDia[1].Item1} <br> ";
+            strSGDia += $" {emsp2()} Ksb(2) = {Math.Round(Ksb, 0)}*{segmentDia[1].Item2}/2/360 = {segmentDia[1].Item3} kN/m <br> ";
+            
+            strSGDia += $" {emsp1()} 以此類推 <br> ";
+            int last = jointNameRing1.Count - 1;
+            strSGDia += $" {emsp1()} 節點{jointNameRing1[last]} 桿件{segmentDia[last].Item1} <br> ";
+            strSGDia += $" {emsp2()} Ksb({last + 1}) = {Math.Round(Ksb, 0)}*{segmentDia[last].Item2}/2/360 = " +
+                $"{segmentDia[last].Item3} kN/m <br> ";
+
+            strSGDia += $" 定義一虛擬桿件來模擬環向節點 <br> ";
+
+            strSGDia += $"{image("環向節點參考桿件.PNG")} <br> ";
+
+            strSGDia += $" T = 12*E*I/L³*𝛿 <br> ";
+            strSGDia += $" T/𝛿 = 12*E*I(i)/L³ = Ksb(i) <br> ";
+
+            strSGDia += $" 假設 L=2.0m E = 1*10¹⁰ kN/m² <br> ";
+            strSGDia += $" 則節點{jointNameRing1[0]} 桿件{segmentDia[0].Item1} <br> ";
+            strSGDia += $" I(1) = Ksb(1) * 2³/(12*1*10¹⁰) = {segmentDia[0].Item3}*2³/(12*1*10¹⁰) = {twoRingInertia[0]} m⁴ <br> ";
+            strSGDia += $" 其等值圓桿件斷面直徑 <br> ";
+            strSGDia += $" {emsp1()} 由 I = π*D⁴/64 {emsp3()} D = (64*I/π)¹ᐟ⁴ <br> ";
+            strSGDia += $" {emsp1()} D(1) = (64*I(1)/π)¹ᐟ⁴ = (64*{twoRingInertia[0]}/π)¹ᐟ⁴ = {segmentDia[0].Item4} m <br> ";
+
+            strSGDia += $" {emsp1()} 因此環片1之節點{jointNameRing1[0]}與環片2之節點{jointNameRing2[0]}間，" +
+                $"以一圓形的桿件{segmentDia[0].Item1}連接，而其直徑即為{segmentDia[0].Item4}m，" +
+                $"當襯砌受外力時   以此桿件之變形來模擬兩環片的剪力變形 <br> ";
+            strSGDia += $" 節點{jointNameRing1[1]} 桿件{segmentDia[1].Item1} <br> ";
+            strSGDia += $" I(1) = Ksb(1) * 2³/(12*1*10¹⁰) = {segmentDia[1].Item3}*2³/(12*1*10¹⁰) = {twoRingInertia[1]} m⁴ <br> ";
+            strSGDia += $" 其等值圓桿件斷面直徑 <br> ";
+            strSGDia += $" {emsp1()} 由 I = π*D⁴/64 {emsp3()} D = (64*I/π)¹ᐟ⁴ <br> ";
+            strSGDia += $" {emsp1()} D(1) = (64*I(1)/π)¹ᐟ⁴ = (64*{twoRingInertia[1]}/π)¹ᐟ⁴ = {segmentDia[1].Item4} m <br> ";
+            strSGDia += $" (此為分析模式中之桿件{segmentDia[1].Item1}) <br> ";
+
+            strSGDia += $" 以此類推剩餘之環向桿件，將環向桿件整理如下表 <br> ";
+
+            strSGDia += $"<table style='text-align:center' border='5' width='300'> <tr> ";
             strSGDia += $"<th> 桿件編號 </th> <th> △θ </th> <th> Ki </th> <th> Di </th> <tr> ";
 
             for(int i = 0; i < segmentDia.Count; i++)
