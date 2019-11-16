@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 //using STN_SQL;
 using System.Data;
-using SAP2000v15;
+//using SAP2000v15;
+using SAP2000v1;
 using System.Data.SqlClient;
 using NPOI;
 using NPOI.SS.UserModel;
@@ -99,8 +100,12 @@ namespace SinoTunnel
         double width;
         double contactDepth;
         double fullDepth;
-        SAP2000v15.SapObject mySapObject;
-        SAP2000v15.cSapModel mySapModel;
+
+        cOAPI mySapObject = null;
+        cHelper myHelper;
+        cSapModel mySapModel;
+        //SAP2000v15.SapObject mySapObject;
+        //SAP2000v15.cSapModel mySapModel;
         public SAP_SegmentProcess(string sectionUID, string condition, double decreasedXaxisP, double increasedZaxisP)
         {
             this.sectionUID = sectionUID;
@@ -247,13 +252,18 @@ namespace SinoTunnel
                 //word.FileSaving(wordpath);
                 return;
             }
-                
 
-            bool temp_bool = true;
-
-            mySapObject = new SAP2000v15.SapObject();
+            myHelper = new Helper();
+            mySapObject = myHelper.CreateObjectProgID("CSI.SAP2000.API.SapObject");
+            ret = mySapObject.ApplicationStart();
             mySapModel = mySapObject.SapModel;
-            mySapObject.ApplicationStart(SAP2000v15.eUnits.kip_ft_F, temp_bool, "");
+            ret = mySapModel.InitializeNewModel((eUnits.kip_in_F));
+
+            //bool temp_bool = true;
+
+            //mySapObject = new SAP2000v15.SapObject();
+            //mySapModel = mySapObject.SapModel;
+            //mySapObject.ApplicationStart(SAP2000v15.eUnits.kip_ft_F, temp_bool, "");
 
             ret = mySapModel.File.OpenFile(fileSavingPath);
             ret = mySapModel.Analyze.RunAnalysis();
@@ -291,7 +301,7 @@ namespace SinoTunnel
 
                 for (int i = 0; i < groutingCutPart - 1; i++)
                 {
-                    ret = mySapModel.Results.FrameForce((i + 1).ToString(), SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref ObjSta, ref elm, ref ElmSta, ref LoadCase, ref StepType_test, ref StepNum_test, ref P, ref V2, ref V3, ref T, ref M2, ref M3);
+                    ret = mySapModel.Results.FrameForce((i + 1).ToString(), eItemTypeElm.ObjectElm, ref num, ref obj, ref ObjSta, ref elm, ref ElmSta, ref LoadCase, ref StepType_test, ref StepNum_test, ref P, ref V2, ref V3, ref T, ref M2, ref M3);                    
                     for (int j = 0; j < P.Length; j++)
                     {
                         inputUID.Add(Guid.NewGuid().ToString("D"));
@@ -608,12 +618,18 @@ namespace SinoTunnel
             string condition,List<string> diameterJointName, bool eqBool, List<string> ringFrameName
             , List<string> resultPath, List<string> contactingFrameName, List<double> assignDepth, List<string> names, string wordpath)
         {
-            int times = realTimes - 1;            
+            int times = realTimes - 1;
 
-            bool temp_bool = true;
-            mySapObject = new SAP2000v15.SapObject();
+            myHelper = new Helper();
+            mySapObject = myHelper.CreateObjectProgID("CSI.SAP2000.API.SapObject");
+            ret = mySapObject.ApplicationStart();
             mySapModel = mySapObject.SapModel;
-            mySapObject.ApplicationStart(SAP2000v15.eUnits.kip_ft_F, temp_bool, "");
+            ret = mySapModel.InitializeNewModel((eUnits.kip_in_F));
+
+            //bool temp_bool = true;
+            //mySapObject = new SAP2000v15.SapObject();
+            //mySapModel = mySapObject.SapModel;
+            //mySapObject.ApplicationStart(SAP2000v15.eUnits.kip_ft_F, temp_bool, "");
 
             ret = mySapModel.File.OpenFile(fileSavingProgress[times]);
             ret = mySapModel.Analyze.RunAnalysis();
@@ -635,7 +651,7 @@ namespace SinoTunnel
                 List<double> newDiameter = new List<double>();
                 for (int i = 0; i < diameterJointName.Count; i++)
                 {
-                    ret = mySapModel.Results.JointDispl(diameterJointName[i], SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
+                    ret = mySapModel.Results.JointDispl(diameterJointName[i], eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
                     newDiameter.Add(U3[0]);
                 }
                 resultVariation = Math.Abs(newDiameter[1] - newDiameter[0]);
@@ -648,7 +664,7 @@ namespace SinoTunnel
                 List<double> newDiameter = new List<double>();
                 for (int i = 0; i < diameterJointName.Count; i++)
                 {
-                    ret = mySapModel.Results.JointDispl(diameterJointName[i], SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
+                    ret = mySapModel.Results.JointDispl(diameterJointName[i], eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
                     newDiameter.Add(U3[0]);
                 }
                 if (realTimes == 1) //只有在第一次計算時要計算常時載重下的直徑變化
@@ -670,7 +686,7 @@ namespace SinoTunnel
             //ret = mySapModel.Results.Setup.SetComboSelectedForOutput(NLLoad[0], true);            
             for (int i = 0; i < ringFrameName.Count; i++) //抓取分析結果的軸力彎矩
             {
-                ret = mySapModel.Results.FrameForce(ringFrameName[i], SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref ObjSta, ref elm, ref ElmSta, ref LoadCase, ref StepType_test, ref StepNum_test, ref P, ref V2, ref V3, ref T, ref M2, ref M3);
+                ret = mySapModel.Results.FrameForce(ringFrameName[i], eItemTypeElm.ObjectElm, ref num, ref obj, ref ObjSta, ref elm, ref ElmSta, ref LoadCase, ref StepType_test, ref StepNum_test, ref P, ref V2, ref V3, ref T, ref M2, ref M3);
 
                 if (i < ringFrameName.Count / 2) //第一環
                 {
@@ -738,7 +754,7 @@ namespace SinoTunnel
 
             foreach(string jt in jtName)//抓取分析結果的節點變位
             {
-                ret = mySapModel.Results.JointDispl(jt, SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, 
+                ret = mySapModel.Results.JointDispl(jt, eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, 
                     ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
                 var data02 = Tuple.Create(jt, loadSAPName);
                 jointProp.Add(data02);
