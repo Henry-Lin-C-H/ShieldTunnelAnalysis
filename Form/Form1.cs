@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SegmentCalcu;
+//using SegmentCalcu;
 using Xceed.Words.NET;
 using System.IO;
 using LiveCharts;
@@ -25,8 +25,8 @@ namespace SinoTunnel
         GeneralCalculation oGeneralCal;
         ExcuteSQL dataSearch = new ExcuteSQL();
         GetWebData p;        
-        SegmentCalcu.STN_SegmentSelf external_Segment; // 外部參考
-        SegmentCalcu.STN_VerticalStress external_VerticalStress; //外部參考    
+        //SegmentCalcu.STN_SegmentSelf external_Segment; // 外部參考
+        //SegmentCalcu.STN_VerticalStress external_VerticalStress; //外部參考    
         SGCalculationDepth sgCalDepth;
         SAP_200yFlood sap200yFlood;
         SAP_ConnectTunnel oConnectTunnel;
@@ -230,8 +230,8 @@ namespace SinoTunnel
             this.p = new GetWebData(sectionUID);
             appGlobal.projectUID = p.projectUID;
 
-            external_Segment = new SegmentCalcu.STN_SegmentSelf(sectionUID); //外部參考            
-            external_VerticalStress = new SegmentCalcu.STN_VerticalStress(sectionUID, "webform"); //外部參考
+            //external_Segment = new SegmentCalcu.STN_SegmentSelf(sectionUID); //外部參考            
+            //external_VerticalStress = new SegmentCalcu.STN_VerticalStress(sectionUID, "webform"); //外部參考
 
             DataTable project = dataSearch.GetByUID("STN_Project", p.projectUID);
             string projectID = project.Rows[0]["ProjectID"].ToString();
@@ -437,19 +437,24 @@ namespace SinoTunnel
         }
 
         #region 環片自重計算
-        private void SegmentSelf_External_Click(object sender, EventArgs e)
+        private void btn_SGSelf_Click(object sender, EventArgs e)
         {
-            external_Segment.Transportation("webform", out string outputTransportation, out double transportationMmax, out double transportationVmax);
+            STN_SegmentSelf self = new STN_SegmentSelf(sectionUID);
+            self.Transportation("webform", out string outputTransportation, out double transportationMmax, out double transportationVmax);
+            
             TransportationMText.Text = transportationMmax.ToString();
             TransportationVText.Text = transportationVmax.ToString();
-            external_Segment.Hanging("webform", out string outputHanging, out double hangingMmax, out double hangingVmax);
+            self.Hanging("webform", out string outputHanging, out double hangingMmax, out double hangingVmax);
             HangingMText.Text = hangingMmax.ToString();
             HangingVText.Text = hangingVmax.ToString();
-            external_Segment.Stacking("webform", out string outputStacking, out double stackingMmax, out double stackingVmax);
+            self.Stacking("webform", out string outputStacking, out double stackingMmax, out double stackingVmax);
             StackingMText.Text = stackingMmax.ToString();
             StackingVText.Text = stackingVmax.ToString();
 
-            web.DocumentText = outputTransportation;
+            TransportationVText.Text = outputTransportation;
+            HangingVText.Text = outputHanging;
+            StackingVText.Text = outputStacking;
+            web.DocumentText = outputTransportation + outputStacking + outputHanging;
         }
 
         private void STN_SegmentSelfInternal_Click(object sender, EventArgs e)
@@ -1079,7 +1084,7 @@ namespace SinoTunnel
 
         private void VSExternal_Click(object sender, EventArgs e)
         {
-            external_VerticalStress.VerticalStress(out string longTermVS, out string shortTermVS, out string surcharge, out double longTermE, out double shortTermE, out double Pv, out double longTermPh1, out double longTermPh2, out double shortTermPh1, out double shortTermPh2, out double U12);
+            //external_VerticalStress.VerticalStress(out string longTermVS, out string shortTermVS, out string surcharge, out double longTermE, out double shortTermE, out double Pv, out double longTermPh1, out double longTermPh2, out double shortTermPh1, out double shortTermPh2, out double U12);
             /*
             cal02_VerticalStress.VerticalStress(out string longtermVerticalStress, out string shortermVerticalStress, out string SurchargeLoad, out double longtermE1, out double shortermE1);
             LongTermE1_Ex.Text = longtermE1.ToString();
@@ -1320,16 +1325,27 @@ namespace SinoTunnel
             if (checkB_Site.Checked) input.Site();
             MessageBox.Show("輸入桿件材料完成");
         }
-
+        
         private void button2_Click(object sender, EventArgs e)
         {
-            //oGeneralCal = new GeneralCalculation(sectionUID, "");
-            //oGeneralCal.Process(out string str);
+            SAP_SpringBeamK oSAP_SpringBeamK = new SAP_SpringBeamK(sectionUID);
 
+            oSAP_SpringBeamK.GroutingSTR(out string groutSTR);
+            oSAP_SpringBeamK.SegmentSpring(out string springSTR);
+            oSAP_SpringBeamK.SegmentD(out string diaSTR);
+            web.DocumentText = diaSTR;
+            textBox1.Text = diaSTR;
+
+            //oGeneralCal = new GeneralCalculation(sectionUID, "winform");
+            //oGeneralCal.Process();
+            //string str = oGeneralCal.inforSTR + oGeneralCal.calSTR[0]
+            //    + oGeneralCal.calSTR[1] + oGeneralCal.calSTR[2] + oGeneralCal.calSTR[3] + oGeneralCal.calSTR[4]
+            //    + oGeneralCal.calSTR[5] + oGeneralCal.calSTR[6] + oGeneralCal.calSTR[7]
+            //    + oGeneralCal.sgCheckSTR + oGeneralCal.pushCheckSTR + oGeneralCal.boltCheckSTR;
             //web.DocumentText = str;
             //textBox1.Text = str;
-            SinoTunnelFile.UploadFile oUploadFile = new UploadFile();
-            string uploadResult = oUploadFile.UploadToServer(sectionUID, "E:\\SAP2000API\\!TestingData\\20190827_Record\\03_\\DQ122_VariationofDiameter.docx");
+            //SinoTunnelFile.UploadFile oUploadFile = new UploadFile();
+            //string uploadResult = oUploadFile.UploadToServer(sectionUID, "E:\\SAP2000API\\!TestingData\\20190827_Record\\03_\\DQ122_VariationofDiameter.docx");
             //STN_StrainCheck oSTN_StrainCheck = new STN_StrainCheck(sectionUID, "win");
             //oSTN_StrainCheck.F_Dia_C_PushAutoInput();
             //oSTN_StrainCheck.Loose_F_DiaAutoInput();
