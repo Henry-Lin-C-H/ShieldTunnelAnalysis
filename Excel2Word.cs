@@ -17,7 +17,7 @@ namespace SinoTunnel
     {
         Document doc;
         ParagraphStyle style;
-        string tempPath = @"P:\8014\Template.docx";
+        string tempPath = @"O:\ADMIN\5028Z-3D自動化設計(II) - 潛盾隧道工程SinoTunnel\09-軟體\SinoTunnel_WinForm\template.docx";
         int numcol = 7; // how much column in a split table
         public Excel2Word()
         {
