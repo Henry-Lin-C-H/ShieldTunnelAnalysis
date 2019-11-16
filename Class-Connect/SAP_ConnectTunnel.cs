@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
-using SegmentCalcu;
+//using SegmentCalcu;
 
-using SAP2000v15;
+//using SAP2000v15;
+using SAP2000v1;
 using NPOI;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -683,8 +684,12 @@ namespace SinoTunnel
         #endregion
 
         #region SAPCalculation
-        SAP2000v15.SapObject mySapObject;
-        SAP2000v15.cSapModel mySapModel;
+        cOAPI mySapObject = null;
+        cHelper myHelper;
+        cSapModel mySapModel;
+
+        //SAP2000v15.SapObject mySapObject;
+        //SAP2000v15.cSapModel mySapModel;
 
         IWorkbook wb;
         int ret;
@@ -733,10 +738,16 @@ namespace SinoTunnel
             jtDisplacement.Clear();
 
 
-            bool temp_bool = true;
-            mySapObject = new SAP2000v15.SapObject();
+            myHelper = new Helper();
+            mySapObject = myHelper.CreateObjectProgID("CSI.SAP2000.API.SapObject");
+            ret = mySapObject.ApplicationStart();
             mySapModel = mySapObject.SapModel;
-            mySapObject.ApplicationStart(SAP2000v15.eUnits.kip_ft_F, temp_bool, "");
+            ret = mySapModel.InitializeNewModel((eUnits.kip_in_F));
+
+            //bool temp_bool = true;
+            //mySapObject = new SAP2000v15.SapObject();
+            //mySapModel = mySapObject.SapModel;
+            //mySapObject.ApplicationStart(SAP2000v15.eUnits.kip_ft_F, temp_bool, "");
 
             ret = mySapModel.File.OpenFile(inputPath);
             ret = mySapModel.Analyze.RunAnalysis();
@@ -748,7 +759,7 @@ namespace SinoTunnel
 
             for(int i = 0; i < frameName.Count; i++)
             {
-                ret = mySapModel.Results.FrameForce(frameName[i], SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref ObjSta, ref elm, ref ElmSta, ref LoadCase, ref StepType_test, ref StepNum_test, ref P, ref V2, ref V3, ref T, ref M2, ref M3);
+                ret = mySapModel.Results.FrameForce(frameName[i], eItemTypeElm.ObjectElm, ref num, ref obj, ref ObjSta, ref elm, ref ElmSta, ref LoadCase, ref StepType_test, ref StepNum_test, ref P, ref V2, ref V3, ref T, ref M2, ref M3);
 
                 var forceProp = Tuple.Create(frameName[i], loadingName, frameName[i]);
                 loadingProp.Add(forceProp);
@@ -770,7 +781,7 @@ namespace SinoTunnel
                     loadingValue.Add(forceValue);
                     loadingUID.Add(Guid.NewGuid().ToString("D"));
                 }
-                ret = mySapModel.Results.JointDispl(frameName[i], SAP2000v15.eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
+                ret = mySapModel.Results.JointDispl(frameName[i], eItemTypeElm.ObjectElm, ref num, ref obj, ref elm, ref LoadCase, ref StepType_test, ref StepNum_test, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
                 var dispProp = Tuple.Create(frameName[i], loadingName);
                 jointProp.Add(dispProp);
                 var dispValue = Tuple.Create(U1[0], U2[0], U3[0], R1[0], R2[0], R3[0]);
