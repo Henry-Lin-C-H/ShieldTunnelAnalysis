@@ -128,4 +128,34 @@ namespace SinoTunnel  // 網路資料庫資料變數定義
         
     }
 
+    class SG
+    {
+        public List<double> angle;
+        public List<double> X;
+        public List<double> Y;
+        public List<double> Z;
+        public SG()
+        {
+            angle = new List<double>();
+            X = new List<double>();
+            Y = new List<double>();
+            Z = new List<double>();
+        }
+    }
+
+    class SGAngle
+    {
+        public double BK_Angle;
+        public double KB_Angle;
+        public double BA_Angle;
+        public double AB_Angle;
+        public SGAngle()
+        {
+            BK_Angle = 0;
+            KB_Angle = 0;
+            BA_Angle = 0;
+            AB_Angle = 0;
+        }
+    }
+
 }

@@ -65,6 +65,8 @@ namespace SinoTunnel  // 讀取網路資料庫資料到變數
 
         //STN_Section 環片灌漿壓力
         public double groutPressure = 0;
+        public double groutAngle = 0;
+        public int groutNumber = 0;
                 
         //STN_Section 環片三次迭代計算選用接觸深度之環片UID，目前沒有用到
         //public List<string> segmentUsedUID = new List<string>();
@@ -290,7 +292,12 @@ namespace SinoTunnel  // 讀取網路資料庫資料到變數
             #endregion
 
             #region 背填灌漿壓力
-            try { this.groutPressure = double.Parse(segment.Rows[0]["BFG_W"].ToString()); }
+            try
+            {
+                this.groutPressure = double.Parse(segment.Rows[0]["BFG_W"].ToString());
+                this.groutAngle = double.Parse(segment.Rows[0]["BFG_SGAngle"].ToString());
+                this.groutNumber = int.Parse(segment.Rows[0]["BFG_N"].ToString());            
+            }
             catch { }
             #endregion
 
