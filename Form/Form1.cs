@@ -1333,8 +1333,25 @@ namespace SinoTunnel
             oSAP_SpringBeamK.GroutingSTR(out string groutSTR);
             oSAP_SpringBeamK.SegmentSpring(out string springSTR);
             oSAP_SpringBeamK.SegmentD(out string diaSTR);
-            web.DocumentText = diaSTR;
-            textBox1.Text = diaSTR;
+
+            string sgResult = oSAP_SpringBeamK.SteelResult();
+
+            web.DocumentText = sgResult;
+            textBox1.Text = sgResult;
+
+            //SAPOut_ConnectTunnel oSAPOut_ConnectTunnel = new SAPOut_ConnectTunnel(sectionUID);
+
+            //string str = oSAPOut_ConnectTunnel.ConnectTunnelSTR();
+
+            //web.DocumentText = str;
+            //textBox1.Text = str;
+
+            //string steelSTR = oSAPOut_ConnectTunnel.ConnectTunnelSteelSTR();
+
+            //string resultSTR = oSAPOut_ConnectTunnel.ConnectTunnelDataSTR();
+
+            //web.DocumentText = resultSTR + "<br>" + steelSTR;
+            //textBox1.Text = resultSTR + "<br>" + steelSTR;
 
             //oGeneralCal = new GeneralCalculation(sectionUID, "winform");
             //oGeneralCal.Process();
