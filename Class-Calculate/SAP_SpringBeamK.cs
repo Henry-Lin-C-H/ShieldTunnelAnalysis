@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace SinoTunnel
 {
-    class SAP_SpringBeamK
+    public class SAP_SpringBeamK
     {
         GetWebData p;
         STN_VerticalStress verticalStress;
+        ExcuteSQL oExecuteSQL = new ExcuteSQL();
 
         double SGradiusIn;
         double SGthick;
@@ -30,12 +32,16 @@ namespace SinoTunnel
         double BAboltAngle;
         double BKboltAngle;
         double AAboltAngle;
-
+        
         SGAngle Ring1 = new SGAngle();
         SGAngle Ring2 = new SGAngle();
 
-        string sectionUID;
+        double groutPressure;
+        double groutAngle;
+        int groutNumber;
 
+        string sectionUID;
+                
         public SAP_SpringBeamK(string sectionUID)
         {
             this.sectionUID = sectionUID;
@@ -69,10 +75,13 @@ namespace SinoTunnel
 
                 this.SGE = p.segmentYoungsModulus;
                 this.SGU12 = p.segmentPoissonRatio;
+
+                this.groutPressure = p.groutPressure;
+                this.groutAngle = p.groutAngle;
+                this.groutNumber = p.groutNumber;
             }
-            catch
-            {
-            }
+            catch { }
+            
         }
 
         public int SGNum1Ring;
@@ -778,8 +787,28 @@ namespace SinoTunnel
         }
         #endregion
 
+        #region 背填灌漿
+        public void GroutingSTR(out string groutSTR)
+        {
+            groutSTR = "2.5 背填灌漿 <br> ";
+
+            groutSTR += $" {emsp2()} 因隧道環片組立完成時，由環片的灌漿孔對盾尾間隙作背填灌漿，將形成一均佈壓力作用在環片外緣，" +
+                $"分析時取單一環片，兩端點以絞支點支撐，環片外緣承受均佈荷重，參考日本土木學會－潛盾隧道設計標準示方書及潛盾隧道深度，" +
+                $"灌漿壓力假設為{groutPressure} kN/m²，環片角度設為{groutAngle}度，節點數設為{groutNumber}。 <br> ";
+
+            groutSTR += $" CASE1：取一半長度承受灌漿壓力 <br> ";
+            groutSTR += $" CASE2：取全部長度承受灌漿壓力 <br> ";
+            groutSTR += $" 由分析結果得知荷重狀況 <br> ";
+
+            groutSTR += $" {image("2_5_0_背填灌漿_02_出圖.PNG")} <br> ";
+            groutSTR += $" {image("2_5_1_背填灌漿_02_出圖.PNG")} <br> ";
+
+        }
+        #endregion
+
+        #region 環片土壤彈簧勁度
         public List<Tuple<string, double, double>> springK = new List<Tuple<string, double, double>>();
-        public void process(out string str)
+        public void SegmentSpring(out string str)
         {
             List<string> nothing = new List<string>();
             VerticalStress();
@@ -814,10 +843,10 @@ namespace SinoTunnel
             }
             str += $" </table>";
 
-            SegmentD(out string strDia);
-            str = strDia;
         }
+        #endregion
 
+        #region 兩環間桿件直徑
         public List<Tuple<string, double, double, double>> segmentDia = new List<Tuple<string, double, double, double>>();
         public void SegmentD(out string strSGDia)
         {
@@ -886,6 +915,58 @@ namespace SinoTunnel
             }
             strSGDia += $"</table> ";
         }
+        #endregion
+
+
+        public string SteelResult()
+        {
+            DataTable result = oExecuteSQL.GetByUID("STN_Section", sectionUID);
+            string main01 = result.Rows[0]["SGYBarNo1"].ToString();
+            string main02 = result.Rows[0]["SGYBarNo2"].ToString();
+            string shearA = result.Rows[0]["SGSBarNoA"].ToString();
+            string shearB = result.Rows[0]["SGSBarNoB"].ToString();
+            string shearK = result.Rows[0]["SGSBarNoK"].ToString();
+
+            string poreStrengthen = result.Rows[0]["Bolt_LTBarNo"].ToString();
+            string UStrengthen = result.Rows[0]["Bolt_UBarNo"].ToString();
+
+            bool mainDif;
+            if (main01 == main02) mainDif = false;
+            else mainDif = true;
+
+            string str = "";
+
+            str = $"環片應力分析結果及配筋 <br> ";
+
+            str += $"<table style='text-align:center' border='5'> <tr> ";
+            str += $"<th> 類別 </th> <th> 使用鋼筋 </th> <th> 分析結果 </th> <th> 圖號 </th> <tr> ";
+            str += $"<th> 主筋(A1,A2), (B1,B2), (K1,K2) </th> ";
+
+            if (mainDif) str += $"<th> D{main01} & D{main02} </th> ";
+            else str += $"<th> D{main01} </th> ";
+
+            str += $"<th> 2-2節~2-10節 </th> <th> </th> <tr> ";
+
+            str += $"<th> 箍筋(A5,A6,A8,A9), (B5,B6,B8,B9), (K6,K7,K9) </th> ";
+            str += $"<th> D{shearA} & D{shearB} & D{shearK} & D16 </th> <th> </th> <th> </th> <tr> ";
+
+            str += $"<th> 螺栓孔加強筋(A3,A7,A12), (B3,B7,B12,B13), (K3,K4,K11) </th> ";
+            str += $"<th> D{poreStrengthen}, D19 </th> <th> </th> <th> </th> <tr> ";
+
+            str += $"<th> 剪力摩擦筋 A4,A4a,B4,B4a,K5 </th> ";
+            str += $"<th> D{UStrengthen} </th> <th> </th> <th> </th> <tr> ";
+
+            str += $"<th> 收邊鋼筋 A10,B10,K10 </th> ";
+            str += $"<th> D13 </th> <th> </th> <th> </th> <tr> ";
+
+            str += $"<th> 槽鋼孔加強筋 A11,B11 </th> ";
+            str += $"<th> 9φ 圓筋 </th> <th> </th> <th> </th> ";
+
+            str += $"</table> ";
+
+
+            return str;
+        }
 
 
         string emsp4() { return "&emsp; &emsp; &emsp; &emsp;"; }
@@ -893,7 +974,8 @@ namespace SinoTunnel
         string emsp2() { return "&emsp; &emsp;"; }
         string emsp1() { return "&emsp;"; }
 
-        public string image(string str) { return $"<img src='{str}'></img> "; }
+        public string image(string str) { return $@"<img src='E:\2019研發案\Winform\images\{str}'></img> "; }
+        //public string image(string str) { return $"<img src='{str}'></img> "; }
     }
 
     
