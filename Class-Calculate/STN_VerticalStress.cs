@@ -373,14 +373,15 @@ namespace SinoTunnel
                         }
                     }
 
-                    string table = $"<table style='3px blaci solid; text-align:left' cellpadding='8' border='5'> <tr> ";
+                    //string table = $"<table style='3px blaci solid; text-align:left' cellpadding='8' border='5'> <tr> ";
+                    string table = $"<table style='text-align:left' border='5'> <tr> ";
 
                     outbuildingload += table;
                     outbuildingload += $"<th style='text-align:center'>  建物載重 </th> ";
-                    outbuildingload += $"<th> <font size='5'>σ</font>z = {verticalStress} kM/m² &nbsp <font size='5'>σ</font>h = {lateralStress} kN/m² </th> ";
+                    outbuildingload += $"<th> σz = {verticalStress} kM/m² &nbsp σh = {lateralStress} kN/m² </th> ";
 
                     outbuildingload += $"<tr> <th style='text-align:center'> 交通荷重 </th>  ";
-                    outbuildingload += $"<th> <font size='5'>σ</font>z = {trafficStress} kN/m² </th> ";
+                    outbuildingload += $"<th> σz = {trafficStress} kN/m² </th> ";
 
                     for (int i = 0; i < tunnelLevel; i++)
                     {
@@ -508,7 +509,7 @@ namespace SinoTunnel
                     if (j == 0)
                     {
                         outputLongtermVerticalStress = outputVerticalStress;
-                        PvBotString = $"{table} {outPvBot} {outFinal}";
+                        PvBotString = $"{outPvBot}";
                     }                        
                     else if (j == 1) outputShortermVerticalStress = outputVerticalStress;
                 }
@@ -617,23 +618,31 @@ namespace SinoTunnel
                                 
                 if (outputCondition.ToUpper().ToString() == "WEBFORM")
                 {
-                    outputAngle = $"<span style='font-size:20px;'> <b> 建物載重計算 </b> </span> <br> <table style='3px black solid;' cellpadding='8' border='5'> <tr> <th rowspan='3'> 頂拱部分  </th> <br> ";
-                    outputAngle += $"<tr> <th> <font size='3'>γ</font>1 = tan<sup>-1</sup>(x1/z) = {Math.Round(gamma1[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp <font size='3'>γ</font>1 = {Math.Round(gamma1[i] * 180 / Math.PI, 3)}&#176 </th> ";
-                    outputAngle += $"<tr> <th> <font size='4'>α</font>1 = tan<sup>-1</sup>[(x1 + x2)/z] - <font size='3'>γ</font>1 = {Math.Round(alpha1[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp <font size='4'>α</font>1 = {Math.Round(alpha1[i] * 180 / Math.PI, 3)}&#176 </th> ";
-                    outputAngle += $"<tr> <th rowspan='3'> 起拱線部分 </th> ";
-                    outputAngle += $"<tr> <th> <font size='3'>γ</font>11 = tan<sup>-1</sup>[(x1 - R)/(z + R)] = {Math.Round(gamma11[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp <font size='3'>γ</font>11 = {Math.Round(gamma11[i] * 180 / Math.PI, 3)}&#176 </th> ";
-                    outputAngle += $"<tr> <th> <font size='4'>α</font>11 = tan<sup>-1</sup>[(x1 + x2 - R)/(z + R)] - <font size='3'>γ</font>11 = {Math.Round(alpha11[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp <font size='4'>α</font>11 = {Math.Round(alpha11[i] * 180 / Math.PI, 3)}&#176 </th> </table> ";
+                    outputAngle = $"<span style='font-size:20px;'> <b> 建物載重計算 </b> </span> <br> ";
+                    outputAngle += $"<table style='text-align:left' cellpadding='8' border='5'> <tr> <th rowspan='3' style='text-align:center'> 頂拱部分  </th> <br> ";
+                    outputAngle += $"<tr> <th> γ1 = tan⁻¹(x1/z) = {Math.Round(gamma1[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp γ1 = {Math.Round(gamma1[i] * 180 / Math.PI, 3)}° </th> ";
+                    outputAngle += $"<tr> <th> α1 = tan⁻¹[(x1 + x2)/z] - γ1 = {Math.Round(alpha1[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp α1 = {Math.Round(alpha1[i] * 180 / Math.PI, 3)}° </th> ";
+                    outputAngle += $"<tr> <th rowspan='3' style='text-align:center'> 起拱線部分 </th> ";
+                    outputAngle += $"<tr> <th> γ11 = tan⁻¹[(x1 - R)/(z + R)] = {Math.Round(gamma11[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp γ11 = {Math.Round(gamma11[i] * 180 / Math.PI, 3)}° </th> ";
+                    outputAngle += $"<tr> <th> α11 = tan⁻¹[(x1 + x2 - R)/(z + R)] - γ11 = {Math.Round(alpha11[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp α11 = {Math.Round(alpha11[i] * 180 / Math.PI, 3)}° </th> </table> ";
 
-                    outStressIncrement = $"<table style='3px: blaci solid; text-align:left' cellpadding='8' border='5'> <tr> <th colspan='2' style='text-align:center'> 隧道頂拱垂直應力增量 </th> <br> ";
-                    outStressIncrement += $"<tr> <th> <font size='5'>σ</font>z = Σ(P/π) * (<font size='4'>α</font>1 + sin(<font size='4'>α</font>1) * cos(<font size='4'>α</font>1 + 2<font size='3'>γ</font>1) <br> = ({p.LD[i].P}/π) * ({Math.Round(alpha1[i], 3)} + sin{Math.Round(alpha1[i] * 180 / Math.PI, 3)}&#176 * cos({Math.Round(alpha1[i] * 180 / Math.PI, 3)}&#176 + 2 * ({Math.Round(gamma1[i] * 180 / Math.PI, 3)}&#176)) </th> ";
-                    outStressIncrement += $"<th> &nbsp <font size='5'>σ</font>z = {Math.Round(verticalIncrement[i], 2)}kN/m&#178 </th> ";
+                    outStressIncrement = $"<table style='text-align:left' cellpadding='8' border='5'> <tr> <th colspan='2' style='text-align:center'> 隧道頂拱垂直應力增量 </th> <br> ";
+                    outStressIncrement += $"<tr> <th> σz = Σ(P/π) * (α1 + sin(α1) * cos(α1 + 2γ1) <br> = " +
+                        $"({p.LD[i].P}/π) * ({Math.Round(alpha1[i], 3)} + sin{Math.Round(alpha1[i] * 180 / Math.PI, 3)}° " +
+                        $"* cos({Math.Round(alpha1[i] * 180 / Math.PI, 3)}° + " +
+                        $"2 * ({Math.Round(gamma1[i] * 180 / Math.PI, 3)}°)) </th> ";
+                    outStressIncrement += $"<th> &nbsp σz = {Math.Round(verticalIncrement[i], 2)}kN/m² </th> ";
                     outStressIncrement += $"<tr> <th colspan='2' style='text-align:center'> 隧道起拱線側向應力增量 </th> ";
-                    outStressIncrement += $"<tr> <th> <font size='5'>σ</font>h = Σ(P/π) * (<font size='4'>α</font>11 - sin(<font size='4'>α</font>11) * cos(<font size='4'>α</font>11 + 2<font size='3'>γ</font>11) <br> = ({p.LD[i].P}/π) * ({Math.Round(alpha11[i], 3)} - sin{Math.Round(alpha11[i] * 180 / Math.PI, 3)}&#176 * cos({Math.Round(alpha11[i] * 180 / Math.PI, 3)}&#176 + 2 * ({Math.Round(gamma11[i] * 180 / Math.PI, 3)}&#176)) </th> ";
-                    outStressIncrement += $"<th> &nbsp <font size='5'>σ</font>h = {Math.Round(lateralIncrement[i], 2)}kN/m&#178 </th> </table> <br> ";
+                    outStressIncrement += $"<tr> <th> σh = Σ(P/π) * (α11 - sin(α11) * cos(α11 + 2γ11) <br> = " +
+                        $"({p.LD[i].P}/π) * ({Math.Round(alpha11[i], 3)} - " +
+                        $"sin{Math.Round(alpha11[i] * 180 / Math.PI, 3)}° * " +
+                        $"cos({Math.Round(alpha11[i] * 180 / Math.PI, 3)}° + " +
+                        $"2 * ({Math.Round(gamma11[i] * 180 / Math.PI, 3)}°)) </th> ";
+                    outStressIncrement += $"<th> &nbsp σh = {Math.Round(lateralIncrement[i], 2)}kN/m² </th> </table> <br> ";
 
                     outputSurchargeLoad += $"{outputAngle}  {outStressIncrement}";                    
                 }
@@ -650,15 +659,17 @@ namespace SinoTunnel
 
             if (outputCondition.ToUpper().ToString() == "WEBFORM")
             {
-                outTrafficLoad = $"<table style='border:3px black solid;' cellpadding='8' border='5'> ";
+                outTrafficLoad = $"<table cellpadding='8' border='5'> ";
                 outTrafficLoad += $"<tr> <th colspan='2'> 車輛載重計算 </th> ";
                 outTrafficLoad += $"<tr> <th> 隧道頂拱深度 </th> <th> {coverDepth}m </th> ";
                 outTrafficLoad += $"<tr> <th> 路寬 </th> <th> {p.roadWidth}m </th> ";
                 outTrafficLoad += $"<tr> <th colspan='2'> 依 HS-20-44 規範，單一車重320kN, 車寬3m, 車長10m </th> ";
                 outTrafficLoad += $"<tr> <th> 可停 </th> <th> {vehicleCapacity}部車 </th> ";
                 outTrafficLoad += $"<tr> <th> B：路寬 + 頂拱深 </th> <th> {p.roadWidth + coverDepth} </th> ";
-                outTrafficLoad += $"<tr> <th> 單位寬度荷重：(320 * {vehicleCapacity})/(10 * {p.roadWidth}) </th> <th> {Math.Round(unitWidthLoad, 2)}kN/m&#178 </th> ";
-                outTrafficLoad += $"<tr> <th> 單位寬度地層荷重(<font size='5'>σ</font>z)：(路面荷重 * 路寬)/B = {STRFraction($"{Math.Round(unitWidthLoad, 2)} * {p.roadWidth}", $"{B}")} </th> <th> {Math.Round(trafficStress, 2)}kN/m&#178 </th> ";
+                outTrafficLoad += $"<tr> <th> 單位寬度荷重：(320 * {vehicleCapacity})/(10 * {p.roadWidth}) </th> <th> {Math.Round(unitWidthLoad, 2)}kN/m² </th> ";
+                outTrafficLoad += $"<tr> <th> 單位寬度地層荷重(σz)：(路面荷重 * 路寬)/B = " +
+                    $"{STRFraction($"{Math.Round(unitWidthLoad, 2)} * {p.roadWidth}", $"{B}")} </th> " +
+                    $"<th> {Math.Round(trafficStress, 2)}kN/m² </th> ";
                 outTrafficLoad += $"</table> ";
                 outputSurchargeLoad += outTrafficLoad;
             }
