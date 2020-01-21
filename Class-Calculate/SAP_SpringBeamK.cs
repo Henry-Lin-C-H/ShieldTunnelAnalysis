@@ -790,7 +790,7 @@ namespace SinoTunnel
         #region 背填灌漿
         public void GroutingSTR(out string groutSTR)
         {
-            groutSTR = "2.5 背填灌漿 <br> ";
+            groutSTR = "背填灌漿 <br> ";
 
             groutSTR += $" {emsp2()} 因隧道環片組立完成時，由環片的灌漿孔對盾尾間隙作背填灌漿，將形成一均佈壓力作用在環片外緣，" +
                 $"分析時取單一環片，兩端點以絞支點支撐，環片外緣承受均佈荷重，參考日本土木學會－潛盾隧道設計標準示方書及潛盾隧道深度，" +
@@ -820,7 +820,7 @@ namespace SinoTunnel
 
             double Em = Math.Round(verticalStress.longTermSoilE, 0);
 
-            str = "C.土壤彈簧 <br> ";
+            str = "土壤彈簧 <br> ";
             str += $"分析時隧道周圍之被動地層反力，以土壤彈簧來模擬，除隧道冠頂90°範圍外，其餘均勻分布於隧道四周，如下圖所示 <br> ";
             str += $"{image("混凝土環片分析土壤彈簧冠頂90度範圍.PNG")} <br> ";
             str += $"由Duddeck and ErdMann(1982)知土層的地基反力係數Ks可由其楊氏係數Em、柏松比、及襯砌環片半徑R來表示，其關係式如下 <br> ";
@@ -829,13 +829,14 @@ namespace SinoTunnel
             str += $"Reference:Duddeck and Erdmann(1982) 'Structural Design Models for Tunnel' Tunneling 82, The Institution" +
                 $" of Mining and Metallurgy, pp83-91 <br> ";
             str += $"模擬被動土層反力彈簧之計算，如下圖所示 <br> ";
+            str += $"{image("2_6_模擬被動土層反力彈簧之計算.PNG")} <br> ";
 
             double tempK009 = Math.Round(soilKs * 0.5 * (54 - 36) / 2 * Math.PI / 180 * SGradiusInter,3);
             str += $"以桿件R1_Link_Soil009為例，其彈簧係數可由地盤反力係數Ks除以彈簧所在範圍求得" +
                 $"R1_Link_Soil009 = {Math.Round(soilKs,2)} * 0.5 * (54°-36°)/2 * (π/180) * {SGradiusInter} = {tempK009} kN/m <br> ";
 
 
-            str += $"<table style='text-align:center' border='5' width='300'> <tr>";
+            str += $"<table style='text-align:center' border='1' width='300'> <tr>";
             str += $" <th> 桿件編號 </th> <th> △θ </th> <th> Ksi </th> <tr> ";                        
             for(int i = 0; i < springK.Count; i++)
             {
@@ -852,9 +853,9 @@ namespace SinoTunnel
         {
             strSGDia = "";
 
-            strSGDia += $"D. 決定環向連結桿之剪力勁度ksb <br> ";
+            strSGDia += $"決定環向連結桿之剪力勁度ksb <br> ";
 
-            strSGDia += $" 如圖 <br> ";
+            strSGDia += $"{image("2_6_決定環向連結桿之剪力勁度.PNG")} <br> ";
 
             strSGDia += $"{emsp1()} 當襯砌環片受外力作用時，在環間剪力超過摩擦力之前，兩環間相對的移動將被限制，" +
                 $"而僅有環片混凝土本身的剪力變形， 因此其作用力-位移曲線為一初始的斜線及一水平線所組成(如圖所示)，" +
@@ -905,7 +906,7 @@ namespace SinoTunnel
 
             strSGDia += $" 以此類推剩餘之環向桿件，將環向桿件整理如下表 <br> ";
 
-            strSGDia += $"<table style='text-align:center' border='5' width='300'> <tr> ";
+            strSGDia += $"<table style='text-align:center' border='1' width='300'> <tr> ";
             strSGDia += $"<th> 桿件編號 </th> <th> △θ </th> <th> Ki </th> <th> Di </th> <tr> ";
 
             for(int i = 0; i < segmentDia.Count; i++)
@@ -917,7 +918,7 @@ namespace SinoTunnel
         }
         #endregion
 
-
+        #region 鋼筋配筋結果
         public string SteelResult()
         {
             DataTable result = oExecuteSQL.GetByUID("STN_Section", sectionUID);
@@ -936,37 +937,110 @@ namespace SinoTunnel
 
             string str = "";
 
-            str = $"環片應力分析結果及配筋 <br> ";
+            //str = $"環片應力分析結果及配筋 <br> ";
+            str = "";
 
-            str += $"<table style='text-align:center' border='5'> <tr> ";
-            str += $"<th> 類別 </th> <th> 使用鋼筋 </th> <th> 分析結果 </th> <th> 圖號 </th> <tr> ";
-            str += $"<th> 主筋(A1,A2), (B1,B2), (K1,K2) </th> ";
+            str += $"<table style='text-align:center' border='1'> ";
+            str += $"<tr> <th> 類別 </th> <th> 使用鋼筋 </th> <th> 分析結果 </th> <th> 圖號 </th> </tr> ";
+            str += $"<tr> <th> 主筋(A1,A2), (B1,B2), (K1,K2) </th> ";
 
             if (mainDif) str += $"<th> D{main01} & D{main02} </th> ";
             else str += $"<th> D{main01} </th> ";
 
-            str += $"<th> 2-2節~2-10節 </th> <th> </th> <tr> ";
+            str += $"<th> 吊放~地震載重 </th> <th> </th> </tr> ";
 
-            str += $"<th> 箍筋(A5,A6,A8,A9), (B5,B6,B8,B9), (K6,K7,K9) </th> ";
-            str += $"<th> D{shearA} & D{shearB} & D{shearK} & D16 </th> <th> </th> <th> </th> <tr> ";
+            str += $"<tr> <th> 箍筋(A5,A6,A8,A9), (B5,B6,B8,B9), (K6,K7,K9) </th> ";
+            str += $"<th> D{shearA} & D{shearB} & D{shearK} & D16 </th> <th> 吊放~地震載重 </th> <th> </th> </tr> ";
 
-            str += $"<th> 螺栓孔加強筋(A3,A7,A12), (B3,B7,B12,B13), (K3,K4,K11) </th> ";
-            str += $"<th> D{poreStrengthen}, D19 </th> <th> </th> <th> </th> <tr> ";
+            str += $"<tr> <th> 螺栓孔加強筋(A3,A7,A12), (B3,B7,B12,B13), (K3,K4,K11) </th> ";
+            str += $"<th> D{poreStrengthen}, D19 </th> <th> 千斤頂推力及螺栓孔檢核 </th> <th> </th> </tr> ";
 
-            str += $"<th> 剪力摩擦筋 A4,A4a,B4,B4a,K5 </th> ";
-            str += $"<th> D{UStrengthen} </th> <th> </th> <th> </th> <tr> ";
+            str += $"<tr> <th> 剪力摩擦筋 A4,A4a,B4,B4a,K5 </th> ";
+            str += $"<th> D{UStrengthen} </th> <th> 千斤頂推力及螺栓孔檢核 </th> <th> </th> </tr> ";
 
-            str += $"<th> 收邊鋼筋 A10,B10,K10 </th> ";
-            str += $"<th> D13 </th> <th> </th> <th> </th> <tr> ";
+            str += $"<tr> <th> 收邊鋼筋 A10,B10,K10 </th> ";
+            str += $"<th> D13 </th> <th> 最小鋼筋量 </th> <th> </th> </tr> ";
 
-            str += $"<th> 槽鋼孔加強筋 A11,B11 </th> ";
-            str += $"<th> 9φ 圓筋 </th> <th> </th> <th> </th> ";
+            str += $"<tr> <th> 槽鋼孔加強筋 A11,B11 </th> ";
+            str += $"<th> 9φ 圓筋 </th> <th> 標準圖 </th> <th> </th> </tr>";
 
             str += $"</table> ";
 
 
             return str;
         }
+        #endregion
+
+        #region 環片應變分析結果
+        
+        public string StrainSTR()
+        {
+            STN_StrainCheck oStrainCheck = new STN_StrainCheck(sectionUID, "win");
+                        
+            oStrainCheck.VerticalStainByEQ(out string s01, out double[] VODEStrain, out double[] VMDEStrain);
+            oStrainCheck.TorsionStrainByEQ(out string s02, out double[] TODEStrain, out double[] TMDEStrain);
+            oStrainCheck.TorsionStrainByEQAndExcavation(out string s03, out string so4, out string s05, out string s06,
+                out List<double> ExcaODEStrain, out List<double> ExcaMDEStrain,
+                out List<double> LooseODEStrain, out List<double> LooseMDEStrain);
+            oStrainCheck.StrainWithNotCircle(out string s07, out List<double> NCODEStrain, out List<double> NCMDEStrain);
+
+            double allowVerComStrain = oStrainCheck.verticalCompressionStrain;
+            double allowFleComStrain = oStrainCheck.FlexuralCompressionStrain;
+            double allowTenStrain = oStrainCheck.tensionStrain;
+
+            double VComStrain = Math.Round(Math.Max(Math.Abs(VODEStrain[0]), Math.Abs(VMDEStrain[0])), 5);
+            double VTenStrain = Math.Round(Math.Max(Math.Abs(VODEStrain[1]), Math.Abs(VMDEStrain[1])), 5);
+
+            double TComStrain = Math.Round(Math.Max(Math.Abs(TODEStrain[0]), Math.Abs(TMDEStrain[0])), 5);
+            double TTenStrain = Math.Round(Math.Max(Math.Abs(TODEStrain[1]), Math.Abs(TMDEStrain[1])), 5);
+
+            double temp01 = 0;
+            double temp02 = 0;
+            temp01 = Math.Max(Math.Abs(ExcaODEStrain[0]), Math.Abs(ExcaODEStrain[2]));
+            temp02 = Math.Max(Math.Abs(ExcaMDEStrain[0]), Math.Abs(ExcaMDEStrain[2]));
+
+            double ExcaComStrain = Math.Round(Math.Max(temp01,temp02), 5);
+
+            temp01 = Math.Max(Math.Abs(ExcaODEStrain[1]), Math.Abs(ExcaODEStrain[3]));
+            temp02 = Math.Max(Math.Abs(ExcaMDEStrain[1]), Math.Abs(ExcaMDEStrain[3]));
+            double ExcaTenStrain = Math.Round(Math.Max(temp01, temp02), 5);
+
+            double LooseComStrain = Math.Round(Math.Max(Math.Abs(LooseODEStrain[0]), Math.Abs(LooseMDEStrain[0])), 5);
+            double LooseTenStrain = Math.Round(Math.Max(Math.Abs(LooseODEStrain[1]), Math.Abs(LooseMDEStrain[1])), 5);
+
+            double NCComStrain = Math.Round(Math.Max(Math.Abs(NCODEStrain[0]), Math.Abs(NCMDEStrain[0])), 5);
+            double NCTenStrain = Math.Round(Math.Max(Math.Abs(NCODEStrain[1]), Math.Abs(NCMDEStrain[1])), 5);
+
+            string str = "";
+
+            str = "環片應變分析結果 <br> ";
+
+            str += $"<table style='text-align:center' border='1'> ";
+            str += $"<tr> <th> 應變項目 </th> <th> 壓(張)應變值 </th> <th> 容許應變值 </th> <th> 備註 </th> </tr> ";
+
+            str += $"<tr> <th> 1.地震引致之縱向應變 </th> <th> {VComStrain}(壓) <br> " +
+                $"{VTenStrain}(張) </th> " +
+                $"<th> {allowVerComStrain}(壓) <br> {allowTenStrain}(張) </th> <th> 2-11節 </th> </tr> ";
+
+            str += $"<tr> <th> 2.地震引致之扭曲應變 </th> <th> {TComStrain}(壓) <br> " +
+                $"{TTenStrain}(張) </th> " +
+                $"<th> {allowVerComStrain}(壓) <br> {allowTenStrain}(張) </th> <th> 2-12節 </th> </tr> ";
+
+            str += $"<tr> <th> 3.開挖及地震引致之應變 </th> <th> {ExcaComStrain}(壓) <br> {ExcaTenStrain}(張) </th> " +
+                $"<th> {allowFleComStrain}(壓) <br> {allowTenStrain}(張) </th> <th> 2-13節 </th> </tr> ";
+
+            str += $"<tr> <th> 4.土層鬆動及地震扭曲引致之應變 </th> <th> {LooseComStrain}(壓) <br> {LooseTenStrain}(張) </th> " +
+                $"<th> {allowFleComStrain}(壓) <br> {allowTenStrain}(張) </th> <th> 2-14節 </th> </tr> ";
+
+            str += $"<tr> <th> 5.隧道非正圓之容許應變及地震引致之扭曲應變 </th> " +
+                $"<th> {NCComStrain}(壓) <br> {NCTenStrain}(張) </th> " +
+                $"<th> {allowFleComStrain}(壓) <br> {allowTenStrain}(張) </th> <th> 2-15節 </th> </tr> ";
+
+            str += $"</table> ";
+
+            return str;
+        }
+        #endregion
 
 
         string emsp4() { return "&emsp; &emsp; &emsp; &emsp;"; }

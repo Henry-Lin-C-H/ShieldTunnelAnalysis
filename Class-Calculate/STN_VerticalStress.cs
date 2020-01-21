@@ -294,6 +294,7 @@ namespace SinoTunnel
 
                 string outPvTop = "<tr> <th colspan='2'> 頂部垂直荷重 PvTop = ";
                 string outPvBot = "<tr> <th colspan='2'> 底部垂直荷重 PvBot = ";
+                if (j == 0) { PvBotString = "底部垂直荷重 PvBot = "; }                
                 string outPh1 = "<tr> <th colspan='2'> 頂部水平力 Ph1 = ";
                 string outPh2 = "<tr> <th colspan='2'> 底部水平力 Ph2 = ";
                 string outPv1Top = "<tr> <th colspan='2'> 頂部垂直有效應力 Pv1' = ";
@@ -347,13 +348,13 @@ namespace SinoTunnel
                         switch (condition.ToUpper().ToString())
                         {
                             case "TUNNEL":
-                                outbuildingload = $"<span style='font-size:20px;'> <b> 環片荷重計算(長期荷重－低水位) </b> </span> <br>";
+                                outbuildingload = $"<span style='font-size:15px;'> <b> 環片荷重計算(長期荷重－低水位) </b> </span> <br>";
                                 break;
                             case "CONNECTOR":
-                                outbuildingload = $"<span style='font-size:20px;'> <b> 聯絡通道荷重計算(長期荷重－低水位) </b> </span> <br>";
+                                outbuildingload = $"<span style='font-size:15px;'> <b> 聯絡通道荷重計算(長期荷重－低水位) </b> </span> <br>";
                                 break;
                             case "SHIELDMACHINE":
-                                outbuildingload = $"<span style='font-size:20px;'> <b> 潛盾機荷重計算(長期荷重－低水位) </b> </span> <br>";
+                                outbuildingload = $"<span style='font-size:15px;'> <b> 潛盾機荷重計算(長期荷重－低水位) </b> </span> <br>";
                                 break;
                         }
                     }
@@ -362,26 +363,26 @@ namespace SinoTunnel
                         switch (condition.ToUpper().ToString())
                         {
                             case "TUNNEL":
-                                outbuildingload = $"<span style='font-size:20px;'> <b> 環片荷重計算(短期荷重－地下水位於地表) </b> </span> <br>";
+                                outbuildingload = $"<span style='font-size:15px;'> <b> 環片荷重計算(短期荷重－地下水位於地表) </b> </span> <br>";
                                 break;
                             case "CONNECTOR":
-                                outbuildingload = $"<span style='font-size:20px;'> <b> 聯絡通道荷重計算(短期荷重－地下水位於地表) </b> </span> <br>";
+                                outbuildingload = $"<span style='font-size:15px;'> <b> 聯絡通道荷重計算(短期荷重－地下水位於地表) </b> </span> <br>";
                                 break;
                             case "SHIELDMACHINE":
-                                outbuildingload = $"<span style='font-size:20px;'> <b> 潛盾機荷重計算(短期荷重－地下水位於地表) </b> </span> <br>";
+                                outbuildingload = $"<span style='font-size:15px;'> <b> 潛盾機荷重計算(短期荷重－地下水位於地表) </b> </span> <br>";
                                 break;
                         }
                     }
 
-                    //string table = $"<table style='3px blaci solid; text-align:left' cellpadding='8' border='5'> <tr> ";
-                    string table = $"<table style='text-align:left' border='5'> <tr> ";
+                    //string table = $"<table style='3px blaci solid; text-align:left' cellpadding='8' border='1'> <tr> ";
+                    string table = $"<table style='text-align:left' border='1'> ";
 
                     outbuildingload += table;
-                    outbuildingload += $"<th style='text-align:center'>  建物載重 </th> ";
-                    outbuildingload += $"<th> σz = {verticalStress} kM/m² &nbsp σh = {lateralStress} kN/m² </th> ";
+                    outbuildingload += $"<tr> <th style='text-align:center'>  建物載重 </th> ";
+                    outbuildingload += $"<th> σz = {verticalStress} kM/m² &nbsp σh = {lateralStress} kN/m² </th> </tr> ";
 
                     outbuildingload += $"<tr> <th style='text-align:center'> 交通荷重 </th>  ";
-                    outbuildingload += $"<th> σz = {trafficStress} kN/m² </th> ";
+                    outbuildingload += $"<th> σz = {trafficStress} kN/m² </th> </tr> ";
 
                     for (int i = 0; i < tunnelLevel; i++)
                     {
@@ -391,10 +392,14 @@ namespace SinoTunnel
                     }
                     soilStress += $"{Math.Round((coverDepth - p.SL[tunnelLevel - 1].Depth), 2)} * {Top_UnitWeigh} + {verticalStress} + {trafficStress}";
 
-                    outPvTop += $"{soilStress} <br> &nbsp = {PTop} kN/m² </th> ";
+                    outPvTop += $"{soilStress} <br> &nbsp = {PTop} kN/m² </th> </tr> ";
 
-                    outPh1 += $"[PvTop - ({coverDepth} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * {tunnelK0} + {Math.Round(p.newton, 2)} * ({coverDepth} - {GWL[j]}) + {lateralStress} <br> &nbsp = {tempPh1} kN/m² </th> ";
-                    outPa1 += $"[PvTop - ({coverDepth} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * {tunnelKa} + {Math.Round(p.newton, 2)} * ({coverDepth} - {GWL[j]}) + {lateralStress} <br> &nbsp = {tempPa1} kN/m² </th> ";
+                    outPh1 += $"[PvTop - ({coverDepth} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * " +
+                        $"{tunnelK0} + {Math.Round(p.newton, 2)} * ({coverDepth} - {GWL[j]}) + {lateralStress} " +
+                        $"<br> &nbsp = {tempPh1} kN/m² </th> </tr> ";
+                    outPa1 += $"[PvTop - ({coverDepth} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * {tunnelKa} + " +
+                        $"{Math.Round(p.newton, 2)} * ({coverDepth} - {GWL[j]}) + {lateralStress} " +
+                        $"<br> &nbsp = {tempPa1} kN/m² </th> </tr> ";
                     if (!crossLayer) //當隧道跨越兩個土層斷面時，計算方式有差
                     {
                         switch (condition.ToUpper().ToString())
@@ -404,6 +409,7 @@ namespace SinoTunnel
                                 {
                                     radiusOut = Math.Round(radiusOut, 2);
                                     outPvBot += $"PvTop + {radiusOut} * 2 * {Top_UnitWeigh} <br> &nbsp = {PBot} kN/m² </th> ";
+                                    if (j == 0) { PvBotString += $"PvTop + {radiusOut} * 2 * {Top_UnitWeigh} = {PBot} kN/m²"; }
 
                                     outPh2 += $"Ph1 + ({radiusOut * 2} * {Top_UnitWeigh} - {radiusOut * 2} * {Math.Round(p.newton, 2)}) * {tunnelK0} + {radiusOut * 2} * {Math.Round(p.newton, 2)} <br> &nbsp = {tempPh2} kN/m² </th> ";
                                     outPa2 += $"[PvTop + ({tunnelDNHeight} - {coverDepth}) * {Bot_UnitWeigh} - ({tunnelDNHeight} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * {tunnelKa} + {Math.Round(p.newton, 2)} * ({tunnelDNHeight} - {GWL[j]}) + {lateralStress} <br> &nbsp = {tempPa2} kN/m² </th> ";
@@ -414,6 +420,7 @@ namespace SinoTunnel
                             case "CONNECTOR":
                                 {
                                     outPvBot += $"PvTop + ({BH} + {TR}) * {Top_UnitWeigh} <br> &nbsp = {PBot} kN/m² </th> ";
+                                    if (j == 0) { PvBotString += $"PvTop + ({BH} + {TR}) * {Top_UnitWeigh} = {PBot} kN/m²"; }
 
                                     outPh2 += $"Ph1 + ({BH + TR} * {Top_UnitWeigh} - {BH + TR} * {Math.Round(p.newton, 2)}) * {tunnelK0} + {BH + TR} * {Math.Round(p.newton, 2)} <br> &nbsp = {tempPh2} kN/m² </th> ";
                                     outPv1Top += $"PvTop - ({coverDepth} - {GWL[j]}) * {Math.Round(p.newton, 2)} <br> &nbsp = {Pv1Top} kN/m² </th> ";
@@ -425,7 +432,7 @@ namespace SinoTunnel
                     else
                     {
                         outPvBot += $"PvTop + ({crossDepth} - {coverDepth}) * {Top_UnitWeigh} + ({tunnelDNHeight} - {crossDepth}) * {Bot_UnitWeigh} <br> &nbsp = {PBot} kN/m² </th> ";
-
+                        if (j == 0) { PvBotString = $"PvTop + ({crossDepth} - {coverDepth}) * {Top_UnitWeigh} + ({tunnelDNHeight} - {crossDepth}) * {Bot_UnitWeigh} = {PBot} kN/m²"; }
                         outPh2 += $"[PvTop + {Top_UnitWeigh} * ({crossDepth} - {coverDepth}) + {Bot_UnitWeigh} * ({tunnelDNHeight} - {crossDepth}) - ({tunnelDNHeight} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * {tunnelBottomK0} + {Math.Round(p.newton, 2)} * ({tunnelDNHeight} - {GWL[j]}) + {lateralStress} <br> &nbsp = {tempPh2} kN/m² </th> ";
                         outPa2 += $"[PvTop + {Top_UnitWeigh} * ({crossDepth} - {coverDepth}) + {Bot_UnitWeigh} * ({tunnelDNHeight} - {crossDepth}) - ({tunnelDNHeight} - {GWL[j]}) * {Math.Round(p.newton, 2)}] * {tunnelBottomKa} + {Math.Round(p.newton, 2)} * ({tunnelDNHeight} - {GWL[j]}) + {lateralStress} <br> &nbsp = {tempPa2} kN/m² </th> ";
 
@@ -509,7 +516,7 @@ namespace SinoTunnel
                     if (j == 0)
                     {
                         outputLongtermVerticalStress = outputVerticalStress;
-                        PvBotString = $"{outPvBot}";
+                        //PvBotString = $"底部垂直荷重 PvBot =";
                     }                        
                     else if (j == 1) outputShortermVerticalStress = outputVerticalStress;
                 }
@@ -619,18 +626,23 @@ namespace SinoTunnel
                 if (outputCondition.ToUpper().ToString() == "WEBFORM")
                 {
                     outputAngle = $"<span style='font-size:20px;'> <b> 建物載重計算 </b> </span> <br> ";
-                    outputAngle += $"<table style='text-align:left' cellpadding='8' border='5'> <tr> <th rowspan='3' style='text-align:center'> 頂拱部分  </th> <br> ";
-                    outputAngle += $"<tr> <th> γ1 = tan⁻¹(x1/z) = {Math.Round(gamma1[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp γ1 = {Math.Round(gamma1[i] * 180 / Math.PI, 3)}° </th> ";
-                    outputAngle += $"<tr> <th> α1 = tan⁻¹[(x1 + x2)/z] - γ1 = {Math.Round(alpha1[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp α1 = {Math.Round(alpha1[i] * 180 / Math.PI, 3)}° </th> ";
-                    outputAngle += $"<tr> <th rowspan='3' style='text-align:center'> 起拱線部分 </th> ";
-                    outputAngle += $"<tr> <th> γ11 = tan⁻¹[(x1 - R)/(z + R)] = {Math.Round(gamma11[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp γ11 = {Math.Round(gamma11[i] * 180 / Math.PI, 3)}° </th> ";
-                    outputAngle += $"<tr> <th> α11 = tan⁻¹[(x1 + x2 - R)/(z + R)] - γ11 = {Math.Round(alpha11[i], 3)} (rad) </th> ";
-                    outputAngle += $"<th> &nbsp α11 = {Math.Round(alpha11[i] * 180 / Math.PI, 3)}° </th> </table> ";
 
-                    outStressIncrement = $"<table style='text-align:left' cellpadding='8' border='5'> <tr> <th colspan='2' style='text-align:center'> 隧道頂拱垂直應力增量 </th> <br> ";
+                    outputAngle += $"<table style='text-align:left' cellpadding='8' border='1'> " +
+                        $"<tr> <th rowspan='2' style='text-align:center'> 頂拱部分  </th> ";
+                    outputAngle += $"<th> γ1 = tan⁻¹(x1/z) = {Math.Round(gamma1[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp γ1 = {Math.Round(gamma1[i] * 180 / Math.PI, 3)}° </th> </tr> ";
+
+                    outputAngle += $"<tr> <th> α1 = tan⁻¹[(x1 + x2)/z] - γ1 = {Math.Round(alpha1[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp α1 = {Math.Round(alpha1[i] * 180 / Math.PI, 3)}° </th> </tr> ";
+
+                    outputAngle += $"<tr> <th rowspan='2' style='text-align:center'> 起拱線部分 </th> ";
+                    outputAngle += $"<th> γ11 = tan⁻¹[(x1 - R)/(z + R)] = {Math.Round(gamma11[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp γ11 = {Math.Round(gamma11[i] * 180 / Math.PI, 3)}° </th> </tr> ";
+
+                    outputAngle += $"<tr> <th> α11 = tan⁻¹[(x1 + x2 - R)/(z + R)] - γ11 = {Math.Round(alpha11[i], 3)} (rad) </th> ";
+                    outputAngle += $"<th> &nbsp α11 = {Math.Round(alpha11[i] * 180 / Math.PI, 3)}° </th> </tr> </table> ";
+
+                    outStressIncrement = $"<table style='text-align:left' cellpadding='8' border='1'> <tr> <th colspan='2' style='text-align:center'> 隧道頂拱垂直應力增量 </th> <br> ";
                     outStressIncrement += $"<tr> <th> σz = Σ(P/π) * (α1 + sin(α1) * cos(α1 + 2γ1) <br> = " +
                         $"({p.LD[i].P}/π) * ({Math.Round(alpha1[i], 3)} + sin{Math.Round(alpha1[i] * 180 / Math.PI, 3)}° " +
                         $"* cos({Math.Round(alpha1[i] * 180 / Math.PI, 3)}° + " +
@@ -659,7 +671,7 @@ namespace SinoTunnel
 
             if (outputCondition.ToUpper().ToString() == "WEBFORM")
             {
-                outTrafficLoad = $"<table cellpadding='8' border='5'> ";
+                outTrafficLoad = $"<table cellpadding='8' border='1'> ";
                 outTrafficLoad += $"<tr> <th colspan='2'> 車輛載重計算 </th> ";
                 outTrafficLoad += $"<tr> <th> 隧道頂拱深度 </th> <th> {coverDepth}m </th> ";
                 outTrafficLoad += $"<tr> <th> 路寬 </th> <th> {p.roadWidth}m </th> ";
@@ -668,7 +680,7 @@ namespace SinoTunnel
                 outTrafficLoad += $"<tr> <th> B：路寬 + 頂拱深 </th> <th> {p.roadWidth + coverDepth} </th> ";
                 outTrafficLoad += $"<tr> <th> 單位寬度荷重：(320 * {vehicleCapacity})/(10 * {p.roadWidth}) </th> <th> {Math.Round(unitWidthLoad, 2)}kN/m² </th> ";
                 outTrafficLoad += $"<tr> <th> 單位寬度地層荷重(σz)：(路面荷重 * 路寬)/B = " +
-                    $"{STRFraction($"{Math.Round(unitWidthLoad, 2)} * {p.roadWidth}", $"{B}")} </th> " +
+                    $"({Math.Round(unitWidthLoad, 2)} * {p.roadWidth})/{B} </th> " +
                     $"<th> {Math.Round(trafficStress, 2)}kN/m² </th> ";
                 outTrafficLoad += $"</table> ";
                 outputSurchargeLoad += outTrafficLoad;

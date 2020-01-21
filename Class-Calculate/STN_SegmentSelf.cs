@@ -164,7 +164,7 @@ namespace SinoTunnel
 
                         VmaxOut = string.Format("Vmax = (w * L/2) - ( w * L1) <br> &emsp; = {0} kN", TransportationShearForce);
 
-                        OutputTransportation = $"2.2 吊放環片過程彎矩計算 <br> ";
+                        OutputTransportation += $"吊放環片過程彎矩計算 <br> ";
                         OutputTransportation += $" <table style='text-align:left' border='0'> <tr> ";
                         OutputTransportation += $" <th> 環片內半徑 R </th> <th> = {RadiusIn}m </th> <tr> ";
                         OutputTransportation += $" <th> 環片厚度 TH </th> <th> = {Thickness}m </th> <tr> ";
@@ -329,7 +329,18 @@ namespace SinoTunnel
                 //最大剪力
                 StackingShearOut = $"Vmax = {Math.Round(SupportReaction, 2)} - ({Math.Round(AUnitLengthWeight, 2)} * {StackingL3}) <br> &emsp; &emsp; &emsp; = {StackingVmax} kN";
 
-                OutputStacking = $"B1 環片檢核 <br> B1環片投影周長 L <br> &emsp; {B1ProjectedLOut} <br> B1單位長度環片自重 w <br> &emsp; {B1UnitLengthwOut} <br> 彎矩計算 <br> &emsp; {B1StackingMomentOut} <br> A3 環片檢核 <br> &emsp;{A3ProjectedLOut} <br> 單位徑度環片自重 <br> &emsp; {UnitRadWeightOut} <br> 集中荷重 P <br> &emsp; {ConcentratedLoadOut} <br> A 單位長度環片自重 Wu <br> &emsp; {AUnitLengthWeightOut} <br> 支撐反力 R <br> &emsp; {SupportReactionOut} <br> 彎矩計算 <br> L1 = {StackingL1} m &emsp; L2 = {StackingL2} m &emsp; L3 = {StackingL3} m <br> 1. 端點至支撐點 <br> &emsp; {StackingMoment01Out} <br> 2. 端點至支撐點 <br> &emsp; {StackingMoment02Out} <br> &emsp; {StackingMomentOut} <br> &emsp; {StackingShearOut}";
+                OutputStacking = $"環片現場堆置彎矩計算 <br> ";
+                OutputStacking += $" <table style='text-align:left' border='0'> <tr> ";
+                OutputStacking += $" <th> 環片內半徑 R </th> <th> = {RadiusIn}m </th> <tr> ";
+                OutputStacking += $" <th> 環片厚度 TH </th> <th> = {Thickness}m </th> <tr> ";
+                OutputStacking += $" <th> A片環片角度 </th> <th> = {AAngle}° </th> <tr> ";
+                OutputStacking += $" <th> B片環片角度 </th> <th> = {BAngle}° </th> <Tr> ";
+                OutputStacking += $" <th> K片環片角度 </th> <th> = {KAngle}° </th> <Tr> ";
+                OutputStacking += $" <th> 環片單位重 γ </th> <th> = {UnitWeight}kN/m³ </th> <tr> ";
+                OutputStacking += $" </table> ";
+
+
+                OutputStacking += $"B1 環片檢核 <br> B1環片投影周長 L <br> &emsp; {B1ProjectedLOut} <br> B1單位長度環片自重 w <br> &emsp; {B1UnitLengthwOut} <br> 彎矩計算 <br> &emsp; {B1StackingMomentOut} <br> A3 環片檢核 <br> &emsp;{A3ProjectedLOut} <br> 單位徑度環片自重 <br> &emsp; {UnitRadWeightOut} <br> 集中荷重 P <br> &emsp; {ConcentratedLoadOut} <br> A 單位長度環片自重 Wu <br> &emsp; {AUnitLengthWeightOut} <br> 支撐反力 R <br> &emsp; {SupportReactionOut} <br> 彎矩計算 <br> L1 = {StackingL1} m &emsp; L2 = {StackingL2} m &emsp; L3 = {StackingL3} m <br> 1. 端點至支撐點 <br> &emsp; {StackingMoment01Out} <br> 2. 端點至支撐點 <br> &emsp; {StackingMoment02Out} <br> &emsp; {StackingMomentOut} <br> &emsp; {StackingShearOut}";
             }
             #endregion
         }
@@ -388,7 +399,17 @@ namespace SinoTunnel
                 HangingMmaxOut = $"Mmax = max(|Mmax1|, |Mmax2|) <br> &emsp; &emsp; = {Math.Round(HangingMmax, 2)} kN-m";
                 HangingVmaxOut = $"VMax = (w * L/2) * (w * L1) <br> &emsp; &emsp; = {Math.Round(HangingVmax, 2)}";
 
-                OutputHanging = $"環片投影周長 L <br> &emsp; {HangingLOut} <br> 單位長度環片自重 w <br> &emsp; {HangingwOut} <br> &emsp; {HangingL2Out} <br> &emsp; {HangingL1Out} <br> 彎矩計算 <br> {HangingMmax1Out} <br> {HangingMmax2Out} <br> {HangingMmaxOut} <br> {HangingVmaxOut}";
+                OutputHanging = $"環片吊裝彎矩計算 <br> ";
+                OutputHanging += $" <table style='text-align:left' border='0'> <tr> ";
+                OutputHanging += $" <th> 環片內半徑 R </th> <th> = {RadiusIn}m </th> <tr> ";
+                OutputHanging += $" <th> 環片厚度 TH </th> <th> = {Thickness}m </th> <tr> ";
+                OutputHanging += $" <th> 環片角度 </th> <th> = {Angle}° </th> <tr> ";
+                OutputHanging += $" <th> 相鄰灌漿孔角度 </th> <th> = {AdjGroutAngle}° </th> <tr> ";
+                OutputHanging += $" <th> 環片單位重 γ </th> <th> = {UnitWeight}kN/m³ </th> <tr> ";
+                OutputHanging += $" </table> ";
+
+
+                OutputHanging += $"環片投影周長 L <br> &emsp; {HangingLOut} <br> 單位長度環片自重 w <br> &emsp; {HangingwOut} <br> &emsp; {HangingL2Out} <br> &emsp; {HangingL1Out} <br> 彎矩計算 <br> {HangingMmax1Out} <br> {HangingMmax2Out} <br> {HangingMmaxOut} <br> {HangingVmaxOut}";
             }
             #endregion
         }

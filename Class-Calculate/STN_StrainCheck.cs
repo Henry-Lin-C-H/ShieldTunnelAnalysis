@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,9 +21,9 @@ namespace SinoTunnel
         double segmentU12 = 0;
         double soilU12 = 0;
 
-        double verticalCompressionStrain = 0.002; //縱向容許壓應變，參考CEDC A VI.B.2
-        double FlexuralCompressionStrain = 0.003; //撓曲容許壓應變，參考CEDC A VI.B.5
-        double tensionStrain = 0.0;
+        public double verticalCompressionStrain = 0.002; //縱向容許壓應變，參考CEDC A VI.B.2
+        public double FlexuralCompressionStrain = 0.003; //撓曲容許壓應變，參考CEDC A VI.B.5
+        public double tensionStrain = 0.0;
 
         int lineHeight = 25;
         string outputCondition;
@@ -122,7 +122,7 @@ namespace SinoTunnel
                         outPara += $" {emsp3()} Vmax = {MDEVmax} cm/sec <br> ";
 
                         outPara += $" {emsp1()} B、隧道縱向應變計算 <br> ";
-                        outPara += $" {emsp2()} &nbsp 依 CEDC 附錄 A，公式 II-4 與隧道縱向軸立 45° 角入射之剪力波所造成之隧道縱向應變可以下式計算  <br>";
+                        outPara += $" {emsp2()} &nbsp 依 CEDC 附錄 A，公式 II-4 與隧道縱向軸力 45° 角入射之剪力波所造成之隧道縱向應變可以下式計算  <br>";
                         outPara += $"<br> {image("images\\2_11_VerticalStrain.jpg")} <br> ";
 
                         outPara += $" {emsp2()} 一、一般設計地震力(ODE)狀況 <br> ";
@@ -150,7 +150,8 @@ namespace SinoTunnel
         }
         double verticalStrainCal(double Vmax, double Amax)
         {                                   
-            return Math.Sqrt(Math.Pow(Vmax / 2 / shearWave / 100, 2) + Math.Pow(0.177 * p.segmentRadiusInter * 100 * Amax / (Math.Pow(shearWave * 100, 2)), 2));
+            return Math.Sqrt(Math.Pow(Vmax / 2 / shearWave / 100, 2) + 
+                Math.Pow(0.177 * p.segmentRadiusInter * 100 * Amax / (Math.Pow(shearWave * 100, 2)), 2));
         }
         #endregion
 

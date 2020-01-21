@@ -392,7 +392,8 @@ namespace SinoTunnel
 
             string str = "";
 
-            str = "土壤彈簧係數計算 <br> ";
+            //str = "土壤彈簧係數計算 <br> ";
+            str = "";
 
             double Em = Math.Round(verticalStress.longTermSoilE, 0);
             double soilNu = Math.Round(verticalStress.Nu12,1);
@@ -490,7 +491,8 @@ namespace SinoTunnel
             var find = dataList.Select($"UID='{resultUID[0]}'")[0]["Axial"].ToString();
             List<string> each = new List<string> { "底板主筋", "底板箍筋", "側牆主筋", "側牆箍筋" };
 
-            str = "聯絡通道分析結果 <br> ";
+            //str = "聯絡通道分析結果 <br> ";
+            str = "";
 
             str += $"<table style='text-align:center' border='5'> <tr> ";
             str += $"<th> 項目 </th> <th> 桿件 </th> <th> 節點 </th> <th> Axial </th> <th> Shear-Y </th> <th> Shear-Z </th> " +
