@@ -92,7 +92,7 @@ namespace SinoTunnel
 
         public void ListLoadData()
         {
-            DataTable list = dataSearch.GetProject();
+            DataTable list = dataSearch.GetDataBySQL(string.Format("SELECT a.*,b.SectionNum FROM [STN_Project] a LEFT OUTER JOIN (SELECT Project,Count(*) AS SectionNum FROM STN_Section GROUP BY Project) b ON b.Project=a.UID WHERE (a.IsDelete=0) AND (a.CreateUser='{0}' OR (a.UID IN (SELECT DISTINCT Project FROM STN_ProjectUser WHERE UserID='{0}')))  ORDER BY a.CreateDate DESC", appGlobal.UserEmail));
 
             list.Columns.Remove("Description");
             list.Columns.Remove("Stage");
@@ -100,7 +100,7 @@ namespace SinoTunnel
             
 
             list.Columns.Add("EmpName", typeof(string));
-            list.Columns.Add("SectionNum", typeof(int));
+            //list.Columns.Add("SectionNum", typeof(int));
 
             DataTable section = dataSearch.GetDataBySQL("SELECT * FROM STN_Section");
             for(int i = 0; i < list.Rows.Count; i++)
@@ -117,6 +117,15 @@ namespace SinoTunnel
                 list.Rows[i]["SectionNum"] = k;
             }
             list.Columns.Remove("CreateUser");
+            list.Columns.Remove("OutSectionA");
+            list.Columns.Remove("OutSectionB");
+            list.Columns.Remove("OutSectionBS");
+            list.Columns.Remove("OutSectionC");
+            list.Columns.Remove("OutSectionD");
+            list.Columns.Remove("OutSectionE");
+            list.Columns.Remove("TemplateForBIM");
+            list.Columns.Remove("DesignBy");
+            list.Columns.Remove("CheckBy");
 
             dataGridView1.DataSource = list;
         }
