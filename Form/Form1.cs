@@ -648,8 +648,8 @@ namespace SinoTunnel
             //excelOnly = false;
         }
 
-        
 
+        bool calContinue;
         private void VariationofDiameter()
         {
             SAP_VariationofDiameter var = new SAP_VariationofDiameter(sectionUID);
@@ -695,8 +695,9 @@ namespace SinoTunnel
                     {
                         MessageBox.Show(strOut + "不符合變位，持續迭代分析" + Environment.NewLine + $"目前為第{i + 1}次迭代，至多進行5次迭代");
                     }
-                    */
+                    */                    
                     strResult(decreasedXaxisP, sapCal.resultVariation, varDia, getResult, i, "0.33%直徑變化");
+                    if (!calContinue) break;
 
                     if (getResult)
                     {
@@ -759,6 +760,7 @@ namespace SinoTunnel
                 else
                 {
                     strResult(increasedZaxisP, sapCal.resultVariation, eqVar, getResult, i, "地震造成直徑變位");
+                    if (!calContinue) break;
 
                     if (getResult)
                     {
@@ -793,23 +795,28 @@ namespace SinoTunnel
 
             string strOut = (strXP + Environment.NewLine + strTarget + Environment.NewLine + strResult + Environment.NewLine);
 
+            calContinue = true;
             if (getResult)
                 MessageBox.Show(strOut + "符合變位，進行後續分析");
             else if (i == 4)
                 MessageBox.Show(strOut + $"5次迭代後仍無符合變位值，請重新檢討{strPressure}");
             else
             {
-                MessageBox.Show(strOut + "不符合變位，持續迭代分析" + Environment.NewLine + $"目前為第{i + 1}次迭代，至多進行5次迭代");
+                DialogResult myresult = MessageBox.Show(
+                    strOut + "不符合變位" + Environment.NewLine + $"目前為第{i + 1}次迭代，至多進行5次迭代，是否繼續計算?", 
+                    $"{condition}", MessageBoxButtons.YesNo);
+                if (myresult == DialogResult.No) calContinue = false;                
+                //MessageBox.Show(strOut + "不符合變位，持續迭代分析" + Environment.NewLine + $"目前為第{i + 1}次迭代，至多進行5次迭代");
             }
         }
 
         public void AnalysisDone()
         {
-            MessageBox.Show("分析完成");
+            MessageBox.Show("分析完成","SinoTunnel");
         }
         public void ExcelOutisDone()
         {
-            MessageBox.Show("輸出Excel完成");
+            MessageBox.Show("輸出Excel完成","SinoTunnel");
         }
 
 
@@ -1328,17 +1335,33 @@ namespace SinoTunnel
         
         private void button2_Click(object sender, EventArgs e)
         {
-            SAP_SpringBeamK oSAP_SpringBeamK = new SAP_SpringBeamK(sectionUID);
+            //測試yes no button
+            DialogResult myresult = MessageBox.Show("選yes or no", "yo", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (myresult == DialogResult.Yes) MessageBox.Show("yes");
+            else if (myresult == DialogResult.No) MessageBox.Show("no");
 
-            oSAP_SpringBeamK.GroutingSTR(out string groutSTR);
-            oSAP_SpringBeamK.SegmentSpring(out string springSTR);
-            oSAP_SpringBeamK.SegmentD(out string diaSTR);
+            // Vertical Stress 的結果
+            //STN_VerticalStress verticalStress = new STN_VerticalStress(sectionUID, "WEBFORM");
+            //verticalStress.VerticalStress("TUNNEL", out string ls, out string ss, out string sus, out double longTermE1,
+            //    out double shortTermE1, out double PvTop, out double longTermPh1, out double longTermPh2, out double shortTermPh1,
+            //    out double shortTermPh2, out double U12);
+            //web.DocumentText = ls + "<br>" + ss + "<br>" + sus + "<br>" + verticalStress.PvBotString;
+            //textBox1.Text = sus;
 
-            string sgResult = oSAP_SpringBeamK.SteelResult();
+            // 鋼筋配筋與應變分析結果
+            //SAP_SpringBeamK oSAP_SpringBeamK = new SAP_SpringBeamK(sectionUID);
 
-            web.DocumentText = sgResult;
-            textBox1.Text = sgResult;
+            //oSAP_SpringBeamK.GroutingSTR(out string groutSTR);
+            //oSAP_SpringBeamK.SegmentSpring(out string springSTR);
+            //oSAP_SpringBeamK.SegmentD(out string diaSTR);
 
+            //string sgResult = oSAP_SpringBeamK.SteelResult(); //鋼筋結果
+            //string strainSTR = oSAP_SpringBeamK.StrainSTR(); //應變分析結果
+
+            //web.DocumentText = sgResult + "<br>" +strainSTR;
+            //textBox1.Text =sgResult + "<br>" + strainSTR;
+
+            // 聯絡通道結果
             //SAPOut_ConnectTunnel oSAPOut_ConnectTunnel = new SAPOut_ConnectTunnel(sectionUID);
 
             //string str = oSAPOut_ConnectTunnel.ConnectTunnelSTR();
@@ -1353,6 +1376,7 @@ namespace SinoTunnel
             //web.DocumentText = resultSTR + "<br>" + steelSTR;
             //textBox1.Text = resultSTR + "<br>" + steelSTR;
 
+            // 慣用計算法
             //oGeneralCal = new GeneralCalculation(sectionUID, "winform");
             //oGeneralCal.Process();
             //string str = oGeneralCal.inforSTR + oGeneralCal.calSTR[0]
